@@ -1,106 +1,163 @@
-<div className="w-[1280px] h-[832px] relative overflow-hidden bg-[#1c1b1c]">
-  <img
-    src="whodunit-logo-1.png"
-    className="w-[410px] h-[410px] absolute left-[774px] top-[210px] object-cover"
-  />
-  <div
-    className="w-[557px] h-[734px] absolute left-[110px] top-12 rounded-[20px] bg-[#d9d9d9]"
-    style={{ boxShadow: "0px 4px 4px 0 rgba(32,32,32,0.25)" }}
-  />
-  <div className="w-[401.53px] h-[71.39px]">
-    <p className="w-[357.36px] h-[26.08px] absolute left-[211px] top-[100px] text-[35px] font-bold text-center text-black">
-      SIGN UP
-    </p>
-    <p className="w-[401.53px] h-[17.39px] absolute left-[189px] top-[154px] text-lg text-center text-black">
-      <span className="w-[401.53px] h-[17.39px] text-lg text-center text-black">
-        We are happy to welcome you!{" "}
-      </span>
-      <br />
-      <span className="w-[401.53px] h-[17.39px] text-lg text-center text-black">
-        Please register here.
-      </span>
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[59.41px]">
-    <div className="w-[455.73px] h-[59.41px] absolute left-[161.5px] top-[385.5px] rounded-[10px] bg-[#1c1b1c]/50" />
-    <p className="w-[401.53px] h-[17.39px] absolute left-[190.11px] top-[407.74px] text-[15px] italic text-center text-white">
-      Gender
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[59.41px]">
-    <div className="w-[455.73px] h-[59.41px] absolute left-[162.5px] top-[307.5px] rounded-[10px] bg-[#1c1b1c]/50" />
-    <p className="w-[401.53px] h-[17.39px] absolute left-[191.11px] top-[329.74px] text-[15px] italic text-center text-white">
-      Date of Birth: YYYY - MM - DD
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[59.41px]">
-    <div className="w-[455.73px] h-[59.41px] absolute left-[161.5px] top-[230.5px] rounded-[10px] bg-[#1c1b1c]/50" />
-    <p className="w-[401.53px] h-[17.39px] absolute left-[190.11px] top-[252.74px] text-[15px] italic text-center text-white">
-      Full Name
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[59.41px]">
-    <div className="w-[455.73px] h-[59.41px] absolute left-[161.5px] top-[462.5px] rounded-[10px] bg-[#1c1b1c]/50" />
-    <p className="w-[401.53px] h-[17.39px] absolute left-[190.11px] top-[484.74px] text-[15px] italic text-center text-white">
-      Username
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[59.41px]">
-    <div className="w-[455.73px] h-[59.41px] absolute left-[161.5px] top-[538.5px] rounded-[10px] bg-[#1c1b1c]/50" />
-    <p className="w-[401.53px] h-[17.39px] absolute left-[190.11px] top-[560.74px] text-[15px] italic text-center text-white">
-      Password
-    </p>
-  </div>
-  <div className="w-[455.73px] h-[42.02px]">
-    <div className="w-[455.73px] h-[42.02px]">
-      <div className="w-[455.73px] h-[42.02px] absolute left-[162.5px] top-[620.5px] rounded-[10px] bg-[#db5b2a]/95" />
-      <p className="w-[401.53px] h-[17.39px] absolute left-[191.11px] top-[631.14px] text-[15px] font-medium text-center text-white">
-        LOG IN
-      </p>
-    </div>
-  </div>
-  <svg
-    width={456}
-    height={2}
-    viewBox="0 0 456 2"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="absolute left-[162px] top-[720px] opacity-90"
-    preserveAspectRatio="none"
-  >
-    <g opacity="0.9" filter="url(#filter0_i_12_70)">
-      <line x1="0.000856636" y1="1.5" x2="456.001" y2="0.500001" stroke="black" />
-    </g>
-    <defs>
-      <filter
-        id="filter0_i_12_70"
-        x={0}
-        y={0}
-        width="456.002"
-        height={6}
-        filterUnits="userSpaceOnUse"
-        color-interpolation-filters="sRGB"
+import logo from "../assets/logo.png";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+
+export default function Signup() {
+  const [fullname, setFullname] = useState("");
+  const [birthdate, setBirthdate] = useState("");
+  const [gender, setGender] = useState("");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [open, setOpen] = useState(false);
+
+
+  const handleSignup = (e) => {
+    e.preventDefault();
+    alert("Sign up successfully!");
+  };
+
+  return (
+    <div className="min-h-screen w-full bg-[#1c1b1c] flex flex-col md:flex-row">
+
+      {/* UNIVERSAL LOGO */}
+      <div
+        className="
+          flex justify-center items-center
+          mt-10 mb-6
+          md:mt-0 md:mb-0 
+          md:absolute 
+          md:right-[18%] lg:right-[15%]
+          md:top-1/2 md:-translate-y-1/2
+          transition-all duration-500 ease-in-out
+        "
       >
-        <feflood flood-opacity={0} result="BackgroundImageFix" />
-        <feblend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
-        <fecolormatrix
-          in="SourceAlpha"
-          type="matrix"
-          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-          result="hardAlpha"
+        <img
+          src={logo}
+          alt="Logo"
+          className="
+            w-20 h-20
+            md:w-82 md:h-82
+            lg:w-92 lg:h-92
+            drop-shadow-xl
+            transition-all duration-500
+          "
         />
-        <feoffset dy={4} />
-        <fegaussianblur stdDeviation={2} />
-        <fecomposite in2="hardAlpha" operator="arithmetic" k2={-1} k3={1} />
-        <fecolormatrix type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-        <feblend mode="normal" in2="shape" result="effect1_innerShadow_12_70" />
-      </filter>
-    </defs>
-  </svg>
-  <p className="w-[444px] h-[15px] absolute left-[168px] top-[684px] text-[15px] italic text-center text-[#00f]">
-    Cancel
-  </p>
-  <p className="w-[444px] h-[15px] absolute left-[168px] top-[740px] text-[15px] italic text-center text-black">
-    Powered by AK
-  </p>
-</div>;
+      </div>
+
+      {/* SIGNUP CARD */}
+      <div className="w-full md:w-1/2 flex justify-center items-center p-6">
+        <div
+          className="
+            bg-white w-full 
+            max-w-md md:max-w-lg lg:max-w-xl
+            rounded-2xl p-10 md:p-12 shadow-lg
+          "
+        >
+          <h1 className="text-center text-3xl font-bold mb-1">SIGN UP</h1>
+          <p className="text-center text-gray-700 mb-6">
+            We are happy to welcome you! <br />
+            Please register here.
+          </p>
+
+          <form onSubmit={handleSignup}>
+            <input
+              type="text"
+              placeholder="Fullname"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-[#a6a6a6] text-white placeholder-white/70 focus:outline-none"
+              required
+            />
+
+            <input
+              type="date"
+              value={birthdate}
+              onChange={(e) => setBirthdate(e.target.value)}
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-[#a6a6a6] text-white focus:outline-none"
+              required
+            />
+
+            <div className="relative mb-4">
+              <button
+                type="button"
+                className="
+                  w-full px-4 py-3 bg-[#a6a6a6] text-white rounded-lg 
+                  flex justify-between items-center
+                "
+                onClick={() => setOpen(!open)}
+              >
+                {gender || "Select gender"}
+                <span className="text-white text-lg">▼</span>
+              </button>
+
+              {open && (
+                <div className="absolute left-0 right-0 mt-1 bg-[#a6a6a6] rounded-lg shadow-lg z-10">
+                
+                  <div
+                    className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg text-white"
+                    onClick={() => { setGender("Male"); setOpen(false); }}
+                  >
+                    Male
+                  </div>
+
+                  <div
+                    className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg text-white"
+                    onClick={() => { setGender("Female"); setOpen(false); }}
+                  >
+                    Female
+                  </div>
+
+                  <div
+                    className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg text-white"
+                    onClick={() => { setGender("Prefer not to say"); setOpen(false); }}
+                  >
+                    Prefer not to say
+                  </div>
+
+                </div>
+              )}
+            </div>
+
+            <input
+              type="text"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-[#a6a6a6] text-white placeholder-white/70 focus:outline-none"
+              required
+            />
+
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full mb-4 px-4 py-3 rounded-lg bg-[#a6a6a6] text-white placeholder-white/70 focus:outline-none"
+              required
+            />
+
+            <button
+              type="submit"
+              className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 rounded-lg font-semibold transition"
+            >
+              SIGN UP
+            </button>
+          </form>
+
+          <div className="mt-3 text-center">
+            <Link to="/" className="text-blue-600 text-sm hover:underline">
+              Cancel
+            </Link>
+          </div>
+
+          <hr className="my-6 border border-gray-300" />
+
+          <p className="text-center text-xs italic text-gray-600">
+            Powered by AK
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
