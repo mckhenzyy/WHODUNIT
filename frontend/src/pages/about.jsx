@@ -1,129 +1,154 @@
 import logo from "../assets/logo.png";
-import { Link, NavLink } from "react-router-dom";
+import bg from "../assets/bg.jpg";
+import { NavLink } from "react-router-dom";
 
 export default function About() {
   return (
-    <div className="min-h-screen bg-[#1c1b1c] text-white flex flex-col items-center px-6 py-10">
+    <div
+      className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      {/* DARK OVERLAY */}
+      <div className="min-h-screen bg-black/70 backdrop-blur-md px-6 py-10 flex flex-col items-center">
 
-      {/* TAB MENU */}
-      <div className="w-full max-w-3xl mb-10">
-        <div className="bg-gray-200 text-black rounded-xl px-2 py-1 flex items-center justify-between shadow-sm">
+        {/* NAVIGATION */}
+        <div className="w-full flex justify-center mt-6 mb-10 px-4">
+          <div className="bg-white/90 text-black rounded-xl px-2 py-1 flex items-center w-full max-w-3xl justify-between shadow">
 
-          {/* About */}
-          <NavLink
-            to="/about"
-            className={({ isActive }) =>
-              `flex-1 text-center py-2 rounded-md
-              ${isActive ? "text-orange-500 font-bold underline underline-offset-4 decoration-2" 
-              : "text-black hover:underline hover:underline-offset-4"}`
-            }
-          >
-            About
-          </NavLink>
-
-          {/* Home */}
-          <NavLink
-            to="/dashboard"
-            className={({ isActive }) =>
-              `flex-1 text-center py-2 rounded-md
-              ${isActive ? "text-orange-500 font-bold underline underline-offset-4 decoration-2" 
-              : "text-black hover:underline hover:underline-offset-4"}`
-            }
-          >
-            Home
-          </NavLink>
-
-          {/* Profile */}
-          <NavLink
-            to="/profile"
-            className={({ isActive }) =>
-              `flex-1 text-center py-2 rounded-md
-              ${isActive ? "text-orange-500 font-bold underline underline-offset-4 decoration-2" 
-              : "text-black hover:underline hover:underline-offset-4"}`
-            }
-          >
-            Profile
-          </NavLink>
-
-        </div>
-      </div>
-
-      {/* MAIN CARD — EXPANDS NATURALLY */}
-      <div
-        className="
-          bg-white text-black rounded-2xl shadow-xl 
-          w-full max-w-3xl 
-          p-10 md:p-12 
-          flex flex-col items-center
-        "
-      >
-
-        {/* LOGO */}
-        <div className="bg-black rounded-full p-4 shadow-md mb-6">
-          <img
-            src={logo}
-            alt="WHODUNT logo"
-            className="w-16 h-16 md:w-24 md:h-24"
-          />
-        </div>
-
-        {/* HEADER */}
-        <h1 className="text-center text-3xl md:text-4xl font-bold mb-6 tracking-wide">
-          ABOUT WHODUNT?
-        </h1>
-
-        {/* DESCRIPTION */}
-        <p className="text-gray-700 leading-relaxed text-center mb-10 text-base md:text-lg px-2">
-          Who has done it? <strong>[WHODUNT?]</strong>: The AI-Generated Mystery Web Game. A light, interactive mystery game where players
-          uncover the suspect using clues, quick reasoning, and fun deduction.
-          It brings excitement to group settings by encouraging teamwork,
-          reactions, and friendly mind games — but it can also be enjoyed solo with
-          <strong> AI</strong>, letting you experience mystery-solving anytime.
-          <br /><br />
-          Whether you're hanging out with friends, hosting an event, or playing alone,
-          WHODUNT? delivers an immersive and enjoyable experience that keeps everyone
-          curious, engaged, and guessing until the final reveal.
-        </p>
-
-        <p className="text-center text-gray-700 italic mb-10 text-base md:text-lg">
-          Powered by AK
-        </p>
-
-        {/* CONTACT CARD */}
-        <div className="bg-gray-100 p-6 rounded-xl shadow w-full">
-
-          <h2 className="text-center text-xl md:text-2xl font-bold mb-3">
-            Need help?
-          </h2>
-
-          <p className="text-gray-700 text-center text-sm md:text-base mb-2">
-            Contact us at:
-          </p>
-
-          <div className="flex flex-col gap-1 text-center text-sm md:text-base">
-
-            <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=khezmangubat@gmail.com"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 hover:underline"
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
             >
-              khezmangubat@gmail.com
-            </a>
+              About
+            </NavLink>
 
-            <a
-              href="https://mail.google.com/mail/?view=cm&fs=1&to=delapenasamalexies@gmail.com"
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-600 hover:underline"
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
             >
-              delapenasamalexies@gmail.com
-            </a>
+              Home
+            </NavLink>
+
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
+            >
+              Profile
+            </NavLink>
 
           </div>
         </div>
-      </div>
 
+        {/* MAIN CONTENT CARD */}
+        <div className="w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
+
+          {/* LOGO */}
+          <div className="flex justify-center mb-8">
+            <img
+              src={logo}
+              alt="WHODUNIT Logo"
+              className="w-28 h-28 md:w-36 md:h-36 drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+            />
+          </div>
+
+          {/* TITLE */}
+          <h1 className="text-center text-2xl font-extrabold text-white tracking-wide mb-6 drop-shadow-lg">
+            ABOUT WHODUNIT?
+          </h1>
+
+          {/* STORY / DESCRIPTION */}
+          <div className="text-gray-200 text-center leading-relaxed text-1xl mb-10">
+            <p>
+              <strong className="text-white">WHODUNIT?</strong> is an AI-powered mystery-solving game 
+              where every case challenges your logic, instincts, and detective skills.
+            </p>
+
+            <br />
+
+            <p>
+              Step into a world where clues hide in plain sight, suspects twist their stories,
+              and every decision leads you closer — or further — from the truth.
+            </p>
+
+            <br />
+
+            <p>
+              Whether you're playing solo or challenging friends,
+              WHODUNIT? turns every round into a thrilling race to uncover:
+            </p>
+          </div>
+
+          {/* BULLET FEATURES (GAME UI STYLE) */}
+          <div className="grid grid-cols-1 gap-4 mb-10">
+
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center shadow-lg">
+              <p className="text-xl font-bold text-[#ff6666]">🔎 AI-Generated Cases</p>
+              <p className="text-sm text-gray-300 mt-1">
+                Every story is unique — no repeated mysteries.
+              </p>
+            </div>
+
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center shadow-lg">
+              <p className="text-xl font-bold text-[#66ccff]">🧠 Logic-Based Gameplay</p>
+              <p className="text-sm text-gray-300 mt-1">
+                Analyze clues, question suspects, find contradictions.
+              </p>
+            </div>
+
+            <div className="bg-white/20 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center shadow-lg">
+              <p className="text-xl font-bold text-[#ffd966]">🔥 Competitive or Solo Modes</p>
+              <p className="text-sm text-gray-300 mt-1">
+                Race friends — or solve mysteries at your own pace.
+              </p>
+            </div>
+
+          </div>
+
+          {/* POWERED */}
+          <p className="text-center text-gray-300 italic mb-12">
+            Powered by AK
+          </p>
+
+          {/* CONTACT SECTION */}
+          <div className="bg-white/20 backdrop-blur-xl p-6 rounded-xl border border-white/20">
+            <h2 className="text-center text-2xl font-bold text-black mb-3">
+              Need help?
+            </h2>
+
+            <p className="text-black-200 text-center text-sm mb-4">
+              Contact the developers:
+            </p>
+
+            <div className="flex flex-col text-center gap-2">
+              <a href="mailto:khezmangubat@gmail.com" className="text-[#ffb3b3] hover:text-white transition">
+                khezmangubat@gmail.com
+              </a>
+              <a href="mailto:delapenasamalexies@gmail.com" className="text-[#ffb3b3] hover:text-white transition">
+                delapenasamalexies@gmail.com
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
   );
 }

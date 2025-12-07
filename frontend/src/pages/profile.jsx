@@ -1,161 +1,317 @@
-import { useState } from "react";
+// import { useState } from "react";
+// import { FaUserCircle } from "react-icons/fa";
+// import { NavLink, useNavigate } from "react-router-dom";
+// import bg from "../assets/bg.jpg";
+
+// export default function Profile() {
+//   // TEMPORARY DATA → backend can replace later
+//   const [fullname] = useState("Khezy Gwen Mangubat");
+//   const [username] = useState("kzmangubat");
+
+//   const [winStreak] = useState(4);
+//   const [gamesPlayed] = useState(23);
+
+//   const [wins] = useState({
+//     day: 1,
+//     week: 5,
+//     month: 12,
+//   });
+
+//   const [losses] = useState({
+//     day: 0,
+//     week: 2,
+//     month: 5,
+//   });
+
+//   const [tab, setTab] = useState("day"); // day | week | month
+//   const navigate = useNavigate();
+
+//   return (
+//     <div
+//       className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat text-white"
+//       style={{ backgroundImage: `url(${bg})` }}
+//     >
+//       {/* DARK OVERLAY */}
+//       <div className="min-h-screen bg-black/70 backdrop-blur-md px-6 py-10 flex flex-col items-center">
+
+//         {/* NAVIGATION */}
+//         <div className="w-full flex justify-center mb-10 px-4">
+//           <div className="bg-white/90 text-black rounded-xl px-2 py-1 flex items-center w-full max-w-3xl justify-between shadow">
+//             <NavLink
+//               to="/about"
+//               className={({ isActive }) =>
+//                 `flex-1 text-center py-2 font-semibold ${
+//                   isActive
+//                     ? "text-[#800000] underline underline-offset-4"
+//                     : "hover:underline"
+//                 }`
+//               }
+//             >
+//               About
+//             </NavLink>
+//             <NavLink
+//               to="/dashboard"
+//               className={({ isActive }) =>
+//                 `flex-1 text-center py-2 font-semibold ${
+//                   isActive
+//                     ? "text-[#800000] underline underline-offset-4"
+//                     : "hover:underline"
+//                 }`
+//               }
+//             >
+//               Home
+//             </NavLink>
+//             <NavLink
+//               to="/profile"
+//               className={({ isActive }) =>
+//                 `flex-1 text-center py-2 font-semibold ${
+//                   isActive
+//                     ? "text-[#800000] underline underline-offset-4"
+//                     : "hover:underline"
+//                 }`
+//               }
+//             >
+//               Profile
+//             </NavLink>
+//           </div>
+//         </div>
+
+//         {/* MAIN PROFILE CARD */}
+//         <div className="w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
+
+//           {/* HEADER */}
+//           <div className="flex flex-col items-center mb-8">
+//             <FaUserCircle className="text-gray-300" size={120} />
+//             <h1 className="text-3xl font-bold mt-4 tracking-wide">{fullname}</h1>
+//             <p className="text-gray-300 text-sm">Username: {username}</p>
+//           </div>
+
+//           {/* WIN STREAK */}
+//           <div className="text-center mb-10">
+//             <h2 className="text-xl font-semibold text-gray-300 tracking-wider">
+//               WIN STREAK
+//             </h2>
+
+//             <div className="mt-3 text-6xl font-extrabold text-[#ff4d4d] drop-shadow-lg">
+//               {winStreak}
+//             </div>
+
+//             <p className="text-gray-400 text-sm mt-1">🔥 Keep it going!</p>
+//           </div>
+
+//           {/* STATS GRID */}
+//           <div className="grid grid-cols-3 gap-4 mb-10">
+//             <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+//               <p className="ttext-sm text-gray-300">Games Played</p>
+//               <p className="text-3xl font-bold text-orange-400">{gamesPlayed}</p>
+//             </div>
+
+//             <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+//               <p className="text-sm text-gray-300">Wins ({tab})</p>
+//               <p className="text-3xl font-bold text-green-400">{wins[tab]}</p>
+//             </div>
+
+//             <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+//               <p className="text-sm text-gray-300">Losses ({tab})</p>
+//               <p className="text-3xl font-bold text-red-400">{losses[tab]}</p>
+//             </div>
+//           </div>
+
+//           {/* TABS */}
+//           <div className="flex justify-center gap-3 mb-10">
+//             {["day", "week", "month"].map((t) => (
+//               <button
+//                 key={t}
+//                 onClick={() => setTab(t)}
+//                 className={`px-5 py-2 rounded-lg font-semibold uppercase tracking-wider text-sm transition ${
+//                   tab === t
+//                     ? "bg-[#800000] text-white shadow-lg"
+//                     : "bg-white/20 border border-white/20 text-gray-300 hover:bg-white/30"
+//                 }`}
+//               >
+//                 {t}
+//               </button>
+//             ))}
+//           </div>
+
+//           {/* LOGOUT BUTTON */}
+//           <button
+//             onClick={() => navigate("/")}
+//             className="w-full bg-red-700 hover:bg-red-900 text-white py-3 rounded-xl font-bold tracking-wide transition shadow-lg"
+//           >
+//             LOG OUT
+//           </button>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// }
+
+
+
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { FaUserCircle } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import bg from "../assets/bg.jpg";
 
 export default function Profile() {
-  // TEMPORARY — backend will replace later
-  const [fullname, setFullname] = useState("Khezy Gwen Mangubat");
-  const [birthdate, setBirthdate] = useState("2005-04-10");
-  const [gender, setGender] = useState("Female");
-  const [username, setUsername] = useState("kzmangubat");
-
-  const [openGender, setOpenGender] = useState(false);
-  const [editing, setEditing] = useState(false); // <--- NEW
-
   const navigate = useNavigate();
+  const storedUser = JSON.parse(localStorage.getItem("user"));
+  const username = storedUser?.username;
+
+  const [profile, setProfile] = useState(null);
+  const [tab, setTab] = useState("day"); // day | week | month
+
+  useEffect(() => {
+    if (!username) {
+      navigate("/");
+      return;
+    }
+
+    axios.get(`http://localhost:5001/api/auth/profile/${username}`)
+      .then((res) => setProfile(res.data))
+      .catch(() => navigate("/"));
+  }, [username, navigate]);
+
+  if (!profile) {
+    return (
+      <div className="flex justify-center items-center h-screen text-white text-lg">
+        Loading profile...
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#1c1b1c] text-white flex flex-col items-center justify-center px-6 py-12">
+    <div
+      className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat text-white"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      {/* DARK OVERLAY */}
+      <div className="min-h-screen bg-black/70 backdrop-blur-md px-6 py-10 flex flex-col items-center">
 
-      {/* PROFILE CARD */}
-      <div className="bg-white w-full max-w-lg rounded-2xl p-8 shadow-xl">
-
-        {/* HEADER */}
-        <div className="flex flex-col items-center mb-6">
-          
-          {/* ICON — NO PHOTO */}
-          <FaUserCircle className="text-gray-400" size={90} />
-
-          <h1 className="text-2xl font-bold text-black mt-4">Profile</h1>
-          <p className="text-sm text-gray-600">
-            Manage your account details.
-          </p>
-        </div>
-
-        {/* FORM FIELDS */}
-        <div className="flex flex-col gap-4">
-
-          {/* FULLNAME */}
-          <div>
-            <label className="text-gray-700 text-sm font-semibold">Full name</label>
-            <input
-              type="text"
-              disabled={!editing}
-              value={fullname}
-              onChange={(e) => setFullname(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 rounded-lg text-black focus:outline-none
-                ${editing ? "bg-[#a6a6a6]" : "bg-gray-300 cursor-not-allowed"}`}
-            />
-          </div>
-
-          {/* BIRTHDATE */}
-          <div>
-            <label className="text-gray-700 text-sm font-semibold">Birthdate</label>
-            <input
-              type="date"
-              disabled={!editing}
-              value={birthdate}
-              onChange={(e) => setBirthdate(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 rounded-lg text-black focus:outline-none
-                ${editing ? "bg-[#a6a6a6]" : "bg-gray-300 cursor-not-allowed"}`}
-            />
-          </div>
-
-          {/* GENDER */}
-          <div className="relative">
-            <label className="text-gray-700 text-sm font-semibold">Gender</label>
-
-            <button
-              type="button"
-              disabled={!editing}
-              className={`w-full mt-1 px-4 py-3 rounded-lg flex justify-between items-center text-black
-                ${editing ? "bg-[#a6a6a6]" : "bg-gray-300 cursor-not-allowed"}`}
-              onClick={() => editing && setOpenGender(!openGender)}
+        {/* NAVIGATION */}
+        <div className="w-full flex justify-center mb-10 px-4">
+          <div className="bg-white/90 text-black rounded-xl px-2 py-1 flex items-center w-full max-w-3xl justify-between shadow">
+            <NavLink
+              to="/about"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
             >
-              {gender}
-              <span>▼</span>
-            </button>
-
-            {editing && openGender && (
-              <div className="absolute left-0 right-0 mt-1 bg-[#a6a6a6] rounded-lg shadow-lg z-10 text-black">
-                <div
-                  className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg"
-                  onClick={() => { setGender("Male"); setOpenGender(false); }}
-                >
-                  Male
-                </div>
-                <div
-                  className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg"
-                  onClick={() => { setGender("Female"); setOpenGender(false); }}
-                >
-                  Female
-                </div>
-                <div
-                  className="px-4 py-2 hover:bg-orange-500 cursor-pointer rounded-lg"
-                  onClick={() => { setGender("Prefer not to say"); setOpenGender(false); }}
-                >
-                  Prefer not to say
-                </div>
-              </div>
-            )}
+              About
+            </NavLink>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
+            >
+              Home
+            </NavLink>
+            <NavLink
+              to="/profile"
+              className={({ isActive }) =>
+                `flex-1 text-center py-2 font-semibold ${
+                  isActive
+                    ? "text-[#800000] underline underline-offset-4"
+                    : "hover:underline"
+                }`
+              }
+            >
+              Profile
+            </NavLink>
           </div>
-
-          {/* USERNAME */}
-          <div>
-            <label className="text-gray-700 text-sm font-semibold">Username</label>
-            <input
-              type="text"
-              disabled={!editing}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className={`w-full mt-1 px-4 py-3 rounded-lg text-black focus:outline-none
-                ${editing ? "bg-[#a6a6a6]" : "bg-gray-300 cursor-not-allowed"}`}
-            />
-          </div>
-
         </div>
 
-        {/* BUTTONS */}
-        <div className="mt-8 flex flex-col gap-3">
+        {/* MAIN PROFILE CARD */}
+        <div className="w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl">
 
-          {/* EDIT / SAVE CHANGES */}
-          {!editing ? (
-            <div>
-                <button
-                onClick={() => setEditing(true)}
-                className="w-full bg-gray-300 hover:bg-orange-600 text-black py-2 rounded-lg font-semibold"
-                >
-                Edit
-                </button>
-                <button
-                onClick={() => navigate("/dashboard")}
-                className="w-full bg-gray-300 hover:bg-gray-400 text-black py-2 rounded-lg font-semibold mt-2"
-                >
-                Go back to dashboard
-                </button>
-            </div>
-          ) : (
-            <div>
-                <button
-                onClick={() => setEditing(false)}
-                className="w-full bg-orange-500 hover:bg-orange-600 text-white py-2 rounded-lg font-semibold"
-                >
-                SAVE CHANGES
-                </button>
-                {/* CANCEL */}
-                <button
-                    onClick={() => setEditing(false)}
-                    className="w-full bg-gray-300 hover:bg-gray-400 text-black py-2 rounded-lg font-semibold mt-2"
-                >
-                    Cancel
-                </button>
-            </div>
-          )}
+          {/* HEADER */}
+          <div className="flex flex-col items-center mb-8">
+            <FaUserCircle className="text-gray-300" size={120} />
+            <h1 className="text-3xl font-bold mt-4 tracking-wide">
+              {profile.fullname}
+            </h1>
+            <p className="text-gray-300 text-sm">Username: {profile.username}</p>
+          </div>
 
+          {/* WIN STREAK */}
+          <div className="text-center mb-10">
+            <h2 className="text-xl font-semibold text-gray-300 tracking-wider">
+              WIN STREAK
+            </h2>
+
+            <div className="mt-3 text-6xl font-extrabold text-[#ff4d4d] drop-shadow-lg">
+              {profile.win_streak}
+            </div>
+
+            <p className="text-gray-400 text-sm mt-1">
+              {profile.win_streak > 0 ? "🔥 Keep going!" : "No active streak"}
+            </p>
+          </div>
+
+          {/* STATS GRID */}
+          <div className="grid grid-cols-3 gap-4 mb-10">
+            <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+              <p className="text-sm text-gray-300">Games Played</p>
+              <p className="text-3xl font-bold text-orange-400">
+                {profile.total_games}
+              </p>
+            </div>
+
+            <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+              <p className="text-sm text-gray-300">Wins ({tab})</p>
+              <p className="text-3xl font-bold text-green-400">
+                {profile?.stats?.[tab]?.wins ?? 0}
+              </p>
+            </div>
+
+            <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
+              <p className="text-sm text-gray-300">Losses ({tab})</p>
+              <p className="text-3xl font-bold text-red-400">
+                {profile?.stats?.[tab]?.losses ?? 0}
+              </p>
+            </div>
+          </div>
+
+          {/* TABS */}
+          <div className="flex justify-center gap-3 mb-10">
+            {["day", "week", "month"].map((t) => (
+              <button
+                key={t}
+                onClick={() => setTab(t)}
+                className={`px-5 py-2 rounded-lg font-semibold uppercase tracking-wider text-sm transition ${
+                  tab === t
+                    ? "bg-[#800000] text-white shadow-lg"
+                    : "bg-white/20 border border-white/20 text-gray-300 hover:bg-white/30"
+                }`}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+
+          {/* LOGOUT BUTTON */}
+          <button
+            onClick={() => {
+              localStorage.removeItem("user");
+              navigate("/");
+            }}
+            className="w-full bg-red-700 hover:bg-red-900 text-white py-3 rounded-xl font-bold tracking-wide transition shadow-lg"
+          >
+            LOG OUT
+          </button>
         </div>
       </div>
-
-      
     </div>
   );
 }

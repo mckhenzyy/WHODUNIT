@@ -2,4 +2,112 @@
 
 @import "tailwindcss";
 
+/*Log in/Sign up animation.*/
+@keyframes slideDown {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slideDown {
+  animation: slideDown 0.35s ease-out forwards;
+}
+
+
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+  50% { filter: drop-shadow(0 0 15px rgba(255,255,255,0.7)); }
+  100% { filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
+}
+
+.animate-glow {
+  animation: glow 2.5s infinite ease-in-out;
+}
+
+/*Story animation.*/
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 6px rgba(255,255,255,0.4)); }
+  50% { filter: drop-shadow(0 0 18px rgba(255,255,255,0.8)); }
+  100% { filter: drop-shadow(0 0 6px rgba(255,255,255,0.4)); }
+}
+.animate-glow {
+  animation: glow 2.5s infinite ease-in-out;
+}
+
+
+/*Glow animation.*/
+@keyframes glow {
+  0% {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  }
+  50% {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+  }
+  100% {
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
+  }
+}
+
+.animate-glow {
+  animation: glow 2.5s infinite ease-in-out;
+}
+
+
+
+/*Chat msg appear animation.*/
+@keyframes messagePop {
+  0% {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-2px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.message-animate {
+  animation: messagePop 0.35s ease-out;
+}
+
+
+
+/*Modal pop up animation.*/
+@keyframes popupRise {
+  0% {
+    transform: translateY(40px) scale(0.95);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.popup-animate {
+  animation: popupRise 0.35s ease-out;
+}
+
+
+/*Results animation.*/
+@keyframes glow {
+  0% { filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+  50% { filter: drop-shadow(0 0 18px rgba(255,255,255,0.8)); }
+  100% { filter: drop-shadow(0 0 8px rgba(255,255,255,0.3)); }
+}
+.animate-glow {
+  animation: glow 2.5s infinite ease-in-out;
+}
+
+
+
+
 

@@ -1,32 +1,39 @@
 import logo from "../../assets/logo.png";
-import { useState, useEffect } from "react";
+import bg from "../../assets/bg.jpg";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-
 export default function SoloChatbox() {
-
   const navigate = useNavigate();
-  const [showCaseEnded, setShowCaseEnded] = useState(false);
 
-  // CONSTANTS
-  const INITIAL_DURATION = 15 * 60; // 15 minutes
-  const EXTENSION_DURATION = 5 * 60; // 5 minutes
-  const VOTING_UNLOCK_SECONDS = 5 * 60; // must run 5 minutes before voting
+  // ======== SESSION + GAME DATA ========
+  const [sessionId, setSessionId] = useState(null);
+  const [story, setStory] = useState("");
+  const [suspects, setSuspects] = useState([]);
+  const [clues, setClues] = useState({ clue1: "Loading...", clue2: null });
+  const [user, setUser] = useState(null);
 
-  // CHAT MESSAGES
-  const [messages, setMessages] = useState([
-    {
-      sender: "AnalieTheSupper",
-      text: "Lorem Ipsum is simply dummy text of the printing and typesetting industry.",
-    },
-    {
-      sender: "AnalieTheSupper",
-      text: "Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.",
-    },
-  ]);
-  const [input, setInput] = useState("");
+  useEffect(() => {
+    const s = localStorage.getItem("solo_session");
+    const st = localStorage.getItem("solo_story");
+    const su = localStorage.getItem("solo_suspects");
+    const cl = localStorage.getItem("solo_clues");
+    const u = localStorage.getItem("user");
 
-  // POPUPS
+    if (!s || !st || !su || !u) {
+      alert("No active solo game found.");
+      navigate("/soloGame/solo_story");
+      return;
+    }
+
+    setSessionId(s);
+    setStory(st);
+    setSuspects(JSON.parse(su));
+    setClues(cl ? JSON.parse(cl) : { clue1: "No clue yet.", clue2: null });
+    setUser(JSON.parse(u));
+  }, [navigate]);
+
+  // ======== POPUP VISIBILITY ========
   const [showStory, setShowStory] = useState(false);
   const [showClues, setShowClues] = useState(false);
   const [showVoting, setShowVoting] = useState(false);
@@ -34,185 +41,332 @@ export default function SoloChatbox() {
   const [showExtend, setShowExtend] = useState(false);
   const [showTooSoonVoting, setShowTooSoonVoting] = useState(false);
   const [showVotingLocked, setShowVotingLocked] = useState(false);
+  const [showCaseEnded, setShowCaseEnded] = useState(false);
 
-  // TIMER
+  // ======== TIMER ========
+  const INITIAL_DURATION = 15 * 60;
+  const EXTENSION_DURATION = 5 * 60;
+  const VOTING_UNLOCK_SECONDS = 5 * 60;
+
   const [timeLeft, setTimeLeft] = useState(INITIAL_DURATION);
   const [totalDuration, setTotalDuration] = useState(INITIAL_DURATION);
   const [elapsedFromStart, setElapsedFromStart] = useState(0);
-  const [extended, setExtended] = useState(false); // unlock clue #2
+  const [extended, setExtended] = useState(false);
 
-  // VOTING
-  const players = ["AnalieTheSupper", "HahaNotMe", "NeverImpostor", "JaneTheHero"];
+  // ======== CHAT ========
+  const [messages, setMessages] = useState([]);
+  const [input, setInput] = useState("");
+  const messagesEndRef = useRef(null);
 
-  const [tempVote, setTempVote] = useState(""); // current selection inside popup
-  const [confirmedVote, setConfirmedVote] = useState(""); // stored vote
-  const [hasVoted, setHasVoted] = useState(false); // at least one confirm
-  const [hasChangedVote, setHasChangedVote] = useState(false); // second confirm done
-
-  // FORMAT TIMER
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60).toString().padStart(2, "0");
-    const s = (seconds % 60).toString().padStart(2, "0");
-    return `${m}:${s}`;
-  };
-
-  // TIMER COUNTDOWN
   useEffect(() => {
-  if (timeLeft <= 0) {
-    // If NOT extended yet → show "grab extension" popup
-    if (!extended) {
-      setShowExtend(true);
-    } else {
-      // If already extended and timer ends → show final result popup
-      setShowCaseEnded(true);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
+  // ======== VOTING ========
+  const players = suspects.length > 0 ? suspects : ["Loading suspects..."];
+  const [tempVote, setTempVote] = useState("");
+  const [confirmedVote, setConfirmedVote] = useState("");
+  const [hasVoted, setHasVoted] = useState(false);
+  const [hasChangedVote, setHasChangedVote] = useState(false);
+
+  const isSecondVoting = hasVoted && !hasChangedVote;
+  const secondsUntilVoting = Math.max(0, VOTING_UNLOCK_SECONDS - elapsedFromStart);
+  const minutesUntilVoting = Math.ceil(secondsUntilVoting / 60);
+
+  // ======== TIMER EFFECT ========
+  useEffect(() => {
+    if (timeLeft <= 0) {
+      if (!extended) setShowExtend(true);
+      else setShowCaseEnded(true);
+      return;
     }
-    return;
-  }
 
-  const interval = setInterval(() => {
-    setTimeLeft((prev) => prev - 1);
-    setElapsedFromStart((prev) => prev + 1);
-  }, 1000);
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => prev - 1);
+      setElapsedFromStart((prev) => prev + 1);
+    }, 1000);
 
-  return () => clearInterval(interval);
-}, [timeLeft, extended]);
+    return () => clearInterval(interval);
+  }, [timeLeft, extended]);
 
+  const formatTime = (s) =>
+    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
-  // SEND MESSAGE
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || !sessionId) return;
 
-    setMessages([
-      ...messages,
-      {
-        sender: "You",
-        text: input,
-      },
-    ]);
-
+    const yourMessage = input;
     setInput("");
+
+    setMessages((prev) => [...prev, { sender: "You", text: yourMessage }]);
+
+    try {
+
+// await fetch("http://localhost:5001/api/solo/chat"
+
+      const API = import.meta.env.VITE_API_BASE_URL;
+      const res = await fetch(`${API}/api/solo/leave`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ session_id: sessionId, message: yourMessage }),
+      });
+
+      const data = await res.json();
+
+      setMessages((prev) => [...prev, { sender: "AI", text: data.reply || "..." }]);
+    } catch (err) {
+      setMessages((prev) => [...prev, { sender: "AI", text: "I had trouble replying. Try again." }]);
+    }
   };
 
-  // HANDLE VOTING OPEN
+  const unlockClue2 = async () => {
+
+    // await fetch("http://localhost:5001/api/solo/clue2"
+    const API = import.meta.env.VITE_API_BASE_URL;
+
+    const res = await fetch(`${API}/api/solo/leave`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+
+    const data = await res.json();
+    setClues((prev) => ({ ...prev, clue2: data.clue2 }));
+    localStorage.setItem("solo_clues", JSON.stringify({ ...clues, clue2: data.clue2 }));
+  };
+
+  const endGame = async (resultStatus) => {
+
+    // const res = await fetch("http://localhost:5001/api/solo/reveal"
+    const API = import.meta.env.VITE_API_BASE_URL;
+
+    const res = await fetch(`${API}/api/solo/reveal`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+
+    const data = await res.json();
+
+    localStorage.setItem(
+      "solo_result",
+      JSON.stringify({
+        result: resultStatus,
+        suspect: data.culprit,
+        explanation: data.final_text,
+      })
+    );
+
+    localStorage.removeItem("solo_session");
+    localStorage.removeItem("solo_story");
+    localStorage.removeItem("solo_suspects");
+    localStorage.removeItem("solo_clues");
+
+    navigate("/soloGame/solo_result");
+  };
+
   const handleOpenVoting = () => {
-    // 1) too early?
-    if (elapsedFromStart < VOTING_UNLOCK_SECONDS) {
-      setShowTooSoonVoting(true);
-      return;
-    }
-
-    // 2) already changed once? no more changes allowed
-    if (hasVoted && hasChangedVote) {
-      setShowVotingLocked(true);
-      return;
-    }
-
-    // 3) open voting popup, pre-select previous vote if any
+    if (elapsedFromStart < VOTING_UNLOCK_SECONDS) return setShowTooSoonVoting(true);
+    if (hasVoted && hasChangedVote) return setShowVotingLocked(true);
     setTempVote(confirmedVote || "");
     setShowVoting(true);
   };
 
-  // TEXT FOR VOTING POPUP (depends on role + whether first/second)
-  const isSecondVoting = hasVoted && !hasChangedVote;
+  // const handleConfirmVote = async () => {
+  //   if (!tempVote) return;
 
-  let votingTitle = "";
-    if (!hasVoted) {
-      votingTitle =
-        "Select to vote for the suspect. You can change your vote later for only one (1) time. Please be careful, justice is what we need.";
-    } else {
-      votingTitle =
-        "Change your vote? After changing your vote, you can never change it once again. This could be your downfall or your last chance to win. Think again.";
-    }
-  
+  //   const res = await fetch("http://localhost:5001/api/solo/vote", {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       session_id: sessionId,
+  //       guess: tempVote,
+  //       username: user.username,
+  //     }),
+  //   });
 
-  // MINUTES LEFT BEFORE VOTING UNLOCKS
-  const secondsUntilVoting = Math.max(0, VOTING_UNLOCK_SECONDS - elapsedFromStart);
-  const minutesUntilVoting = Math.ceil(secondsUntilVoting / 60);
+  //   const data = await res.json();
+
+  //   if (!hasVoted) {
+  //     setHasVoted(true);
+  //     setConfirmedVote(tempVote);
+  //   } else if (!hasChangedVote) {
+  //     setHasChangedVote(true);
+  //     setConfirmedVote(tempVote);
+  //   }
+
+  //   setShowVoting(false);
+
+  //   if (data.correct) return endGame("win");
+
+  //   if (!isSecondVoting) {
+  //     unlockClue2();
+  //     alert("Wrong guess. Clue #2 unlocked.");
+  //   } else alert("Wrong again. You cannot change your vote anymore.");
+  // };
+
+const handleConfirmVote = async () => {
+  if (!tempVote) return;
+
+
+
+
+  // const res = await fetch("http://localhost:5001/api/solo/vote"
+
+  const API = import.meta.env.VITE_API_BASE_URL;
+
+  const res = await fetch(`${API}/api/solo/vote`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: sessionId,
+      guess: tempVote,
+      username: user.username,
+    }),
+  });
+
+  const data = await res.json();
+
+  // If backend says it's too early to vote
+  if (data.error === "too_soon") {
+    setShowTooSoonVoting(true);
+    return;
+  }
+
+  // Update vote state (first or second vote)
+  if (!hasVoted) {
+    setHasVoted(true);
+    setConfirmedVote(tempVote);
+  } else if (!hasChangedVote) {
+    setHasChangedVote(true);
+    setConfirmedVote(tempVote);
+  }
+
+  setShowVoting(false);
+
+  // If final result, end the game
+  if (data.final) {
+    return endGame(data.correct ? "win" : "lose");
+  }
+
+  // If backend says unlock clue (first vote wrong)
+  if (data.unlock_clue) {
+    await unlockClue2();
+    alert("Wrong guess. Clue #2 unlocked. You have one last chance.");
+    return;
+  }
+
+  // If second vote wrong (fallback)
+  if (!data.correct && !data.unlock_clue && !data.final) {
+    alert("Wrong again. You cannot vote anymore.");
+  }
+};
+
+
+
+  const handleLeaveGame = async () => {
+    // await fetch("http://localhost:5001/api/solo/leave"
+    const API = import.meta.env.VITE_API_BASE_URL;
+
+    await fetch(`${API}/api/solo/leave`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId }),
+    });
+    navigate("/dashboard");
+  };
 
   return (
-    <div className="w-full min-h-screen flex bg-black">
-      {/* LEFT SIDEBAR */}
-      <div className="w-[260px] bg-[#1a1a1a] flex justify-center items-center border-r border-gray-700">
-        <img src={logo} className="w-40 select-none" />
+    <div
+      className="w-full h-screen bg-fixed bg-cover bg-center bg-no-repeat flex overflow-hidden relative"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-xl"></div>
+
+      {/* ===== SIDEBAR | hidden on phones ===== */}
+      <div className="hidden md:flex relative z-10 w-[260px] bg-white/10 backdrop-blur-xl border-r border-white/20 p-6 flex-col items-center justify-center shadow-2xl">
+        <img 
+          src={logo} 
+          className="w-40 mb-6 drop-shadow-[0_0_20px_rgba(255,255,255,0.7)] animate-glow" 
+          alt="logo" 
+        />
+
+       <div className="text-gray-300 text-sm space-y-3 text-center">
+          <p>
+            <span className="font-semibold text-white">Case ID:</span> {sessionId}
+          </p>
+        </div>
       </div>
 
-      {/* RIGHT SIDE */}
-      <div className="flex-1 flex flex-col p-8">
-        {/* MAIN WHITE CARD */}
-        <div className="bg-white rounded-2xl p-8 flex flex-col flex-1">
-          {/* HEADER */}
-          <div className="flex justify-between mb-6">
-            <div className="bg-gray-100 px-4 py-2 rounded-xl text-sm font-semibold">
-              Chat room of: 8327298-389283982933
-            </div>
 
-            <div className="text-blue-600 font-semibold text-sm">
-              Timer:{" "}
-              <span className="text-blue-800">
-                {formatTime(timeLeft)} / {formatTime(totalDuration)}
-              </span>
+      {/* ===== MAIN CHAT ===== */}
+      <div className="relative z-10 flex-1 flex flex-col p-4 md:p-8 text-white">
+        <div className="flex flex-col flex-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-4 md:p-8 shadow-2xl min-h-0">
+
+          {/* HEADER */}
+          <div className="flex flex-col sm:flex-row justify-between items-center mb-6 gap-3">
+            <h2 className="text-xl md:text-2xl font-bold tracking-wide text-center sm:text-left">Who has done it?</h2>
+
+            {/* MOBILE TIMER REMAINS */}
+            <div className="text-sm text-gray-300 border px-4 py-1 rounded-full bg-white/10">
+              {formatTime(timeLeft)} remaining
             </div>
           </div>
 
-          {/* CHAT MESSAGES */}
-          <div className="flex-1 overflow-y-auto pr-4">
+          {/* CHAT */}
+          <div className="flex-1 overflow-y-auto pr-2 md:pr-4 pb-4 space-y-6">
             {messages.map((msg, i) => {
               const isYou = msg.sender === "You";
-
               return (
-                <div
-                  key={i}
-                  className={`flex mb-6 ${isYou ? "justify-end" : "justify-start"}`}
-                >
+                <div key={i} className={`flex ${isYou ? "justify-end" : "justify-start"}`}>
                   <div
-                    className={`flex ${
-                      isYou ? "flex-row-reverse" : "flex-row"
-                    } items-start gap-3`}
+                    className={`max-w-[80%] md:max-w-[65%] p-4 rounded-2xl shadow-lg backdrop-blur-md ${
+                      isYou
+                        ? "bg-[#800000]/80 text-white rounded-br-none"
+                        : "bg-white/90 text-red-400 rounded-bl-none"
+                    }`}
                   >
-                    {/* Avatar */}
-                    <div className="w-10 h-10 rounded-full bg-gray-400 text-black flex items-center justify-center font-bold">
-                      {msg.sender[0]}
-                    </div>
-
-                    {/* Bubble */}
-                    <div className={isYou ? "text-right" : "text-left"}>
-                      <div className="p-4 rounded-lg max-w-[650px] bg-gray-300">
-                        {msg.text}
-                      </div>
-                      <p className="text-xs text-gray-700 mt-1">{msg.sender}</p>
-                    </div>
+                    {msg.text}
+                    <p className="text-xs opacity-90 mt-1">{msg.sender}</p>
                   </div>
                 </div>
               );
             })}
+            <div ref={messagesEndRef}></div>
           </div>
 
           {/* NAV BUTTONS */}
-          <div className="flex gap-6 mt-5 text-blue-600 font-semibold">
-            <button onClick={() => setShowStory(true)}>Story</button>
-            <button onClick={() => setShowClues(true)}>Clues</button>
-            <button onClick={handleOpenVoting}>Voting</button>
-            <button
-              onClick={() => setShowLeave(true)}
-              className="text-red-600"
-            >
-              Leave
+          <div className="flex flex-wrap gap-4 justify-center mt-6 text-sm font-semibold">
+            <button onClick={() => setShowStory(true)} className="px-4 py-2 bg-white/10 border border-white/30 rounded-xl hover:bg-white/20 transition">
+              STORY
+            </button>
+
+            <button onClick={() => setShowClues(true)} className="px-4 py-2 bg-white/10 border border-white/30 rounded-xl hover:bg-white/20 transition">
+              CLUES
+            </button>
+
+            <button onClick={handleOpenVoting} className="px-4 py-2 bg-white/10 border border-white/30 rounded-xl hover:bg-white/20 transition">
+              VOTE
+            </button>
+
+            <button onClick={() => setShowLeave(true)} className="px-4 py-2 bg-red-700/50 border border-red-800 rounded-xl hover:bg-red-700 transition">
+              LEAVE
             </button>
           </div>
 
           {/* INPUT */}
-          <div className="flex mt-6">
+          <div className="flex flex-col sm:flex-row mt-6 gap-4">
             <input
               type="text"
-              placeholder="Type here..."
-              className="flex-1 bg-gray-200 p-3 rounded-md text-black"
+              placeholder="Type your message..."
+              className="flex-1 bg-white/20 text-black placeholder-gray-300 p-4 rounded-xl backdrop-blur-md border border-white/30 focus:outline-none"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
             />
             <button
               onClick={handleSend}
-              className="ml-3 bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-lg font-semibold"
+              className="px-8 bg-[#800000] hover:bg-[#990000] text-white font-semibold rounded-xl transition"
             >
               SEND
             </button>
@@ -220,23 +374,16 @@ export default function SoloChatbox() {
         </div>
       </div>
 
-      {/* ====================== POPUPS ========================== */}
-
-      {/* STORY POPUP */}
+      {/* POPUPS — unchanged */}
       {showStory && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8 shadow-lg">
-            <h1 className="text-xl font-bold mb-4 text-center">Story</h1>
-
-            <p className="text-gray-700 leading-relaxed text-center mb-6">
-              Full story content will be placed here...
-            </p>
-
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowStory(false)}
-                className="text-blue-600 font-semibold hover:underline"
-              >
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 text-white w-[90%] max-w-3xl p-10 rounded-3xl shadow-2xl">
+            <h1 className="text-2xl font-bold text-center mb-6">Case Story</h1>
+            <div className="max-h-[55vh] overflow-y-auto text-gray-200 leading-relaxed whitespace-pre-line border border-white/20 p-6 rounded-xl bg-white/5">
+              {story}
+            </div>
+            <div className="flex justify-center mt-6">
+              <button onClick={() => setShowStory(false)} className="text-[#ff9999] hover:text-white transition underline">
                 Close
               </button>
             </div>
@@ -244,27 +391,16 @@ export default function SoloChatbox() {
         </div>
       )}
 
-      {/* CLUES POPUP */}
       {showClues && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8 shadow-lg">
-            <h1 className="text-xl font-bold mb-4 text-center">Clues</h1>
-
-            <p className="text-gray-700 leading-relaxed text-center mb-4">
-              🔍 Clue #1: The suspect was seen near the hallway at 9:13 PM.
-            </p>
-
-            {extended && (
-              <p className="text-gray-700 leading-relaxed text-center mb-6">
-                🔍 Clue #2: A witness confirms the suspect dropped an object.
-              </p>
-            )}
-
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowClues(false)}
-                className="text-blue-600 font-semibold hover:underline"
-              >
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 text-white w-[90%] max-w-3xl p-10 rounded-3xl shadow-2xl">
+            <h1 className="text-2xl font-bold text-center mb-6">Clues</h1>
+            <div className="text-center space-y-4 text-gray-100 text-lg">
+              <p>🔍 Clue #1: {clues.clue1}</p>
+              {clues.clue2 && <p>🔍 Clue #2: {clues.clue2}</p>}
+            </div>
+            <div className="flex justify-center mt-8">
+              <button onClick={() => setShowClues(false)} className="text-[#ff9999] hover:text-white transition underline">
                 Close
               </button>
             </div>
@@ -272,203 +408,131 @@ export default function SoloChatbox() {
         </div>
       )}
 
-      {/* VOTING POPUP */}
       {showVoting && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-16 z-50">
-          <div className="bg-white w-[90%] max-w-4xl rounded-xl p-10">
-            <h1 className="text-xl font-bold text-center mb-8">{votingTitle}</h1>
-
-            {/* Names */}
-            <div className="flex flex-col items-center gap-3 mb-8">
-              {players.map((p) => {
-                const isPrevVote = isSecondVoting && confirmedVote === p;
-                const isSelected = tempVote === p;
-
-                const colorClass = isSelected ? "text-red-600" : "text-black";
-                const underlineClass = isPrevVote && !isSelected ? "underline" : "";
-
-                return (
-                  <button
-                    type="button"
-                    key={p}
-                    onClick={() => setTempVote(p)}
-                    className={`text-lg ${colorClass} ${underlineClass} hover:text-red-600`}
-                  >
-                    {p}
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Confirm / Cancel */}
-            <div className="flex justify-center gap-10">
-              <button
-                onClick={() => {
-                  // Only save when confirming
-                  if (!tempVote) return;
-
-                  if (!hasVoted) {
-                    setConfirmedVote(tempVote);
-                    setHasVoted(true);
-                  } else if (!hasChangedVote) {
-                    setConfirmedVote(tempVote);
-                    setHasChangedVote(true);
-                  }
-                  setShowVoting(false);
-                }}
-                disabled={!tempVote}
-                className={`font-semibold ${
-                  tempVote
-                    ? "text-black-600 hover:underline"
-                    : "text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Confirm
-              </button>
-
-              <button
-                onClick={() => {
-                  setTempVote(confirmedVote || "");
-                  setShowVoting(false);
-                }}
-                className="font-semibold text-black-600 hover:underline"
-              >
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* LEAVE POPUP */}
-      {showLeave && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-16 z-50">
-          <div className="bg-white w-[90%] max-w-4xl rounded-xl p-10">
-            <h1 className="text-xl font-bold text-center mb-10">
-              That’s a very critical decision. Players need your support.
-              Leaving the room means leaving this case.
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 backdrop-blur-xl border border-white/20 text-white w-[95%] max-w-4xl p-8 rounded-3xl shadow-2xl">
+            <h1 className="text-xl md:text-2xl font-bold text-center mb-6">
+              {isSecondVoting ? "Final Vote — Choose Carefully" : "Choose Your Suspect"}
             </h1>
 
-            <div className="flex justify-between px-10">
+            <div className="flex flex-col items-center space-y-4 text-lg">
+              {players.map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setTempVote(p)}
+                  className={`px-4 py-2 rounded-xl border transition ${
+                    tempVote === p
+                      ? "bg-[#800000] border-[#990000] text-white"
+                      : "bg-white/10 border-white/20 text-gray-200 hover:bg-white/20"
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex justify-center gap-10 mt-8">
               <button
-                onClick={() => setShowLeave(false)}
-                className="text-blue-600 text-lg font-semibold hover:underline"
+                onClick={handleConfirmVote}
+                disabled={!tempVote}
+                className={`px-6 py-2 font-semibold rounded-xl ${
+                  tempVote ? "bg-green-700 hover:bg-green-800" : "bg-gray-500 cursor-not-allowed"
+                }`}
               >
+                CONFIRM
+              </button>
+
+              <button onClick={() => setShowVoting(false)} className="px-6 py-2 font-semibold bg-red-700 hover:bg-red-800 rounded-xl">
+                CANCEL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLeave && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 w-[90%] max-w-3xl p-10 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl text-white text-center">
+            <h1 className="text-2xl font-bold mb-6">Leave the Case?</h1>
+            <p className="mb-8 text-gray-300">Leaving will end this investigation. Are you sure?</p>
+
+            <div className="flex justify-center gap-16">
+              <button onClick={() => setShowLeave(false)} className="underline text-gray-200 hover:text-white transition">
                 GO BACK
               </button>
 
-              <button
-                onClick={() => navigate("/dashboard")}
-                className="text-red-600 text-lg font-semibold hover:underline"
-              >
+              <button onClick={handleLeaveGame} className="underline text-red-500 hover:text-white transition">
                 FORCE EXIT
               </button>
-
             </div>
           </div>
         </div>
       )}
 
-      {/* TIMER EXPIRED POPUP (EXTENSION) */}
-      {showExtend && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8">
-            <p className="text-center text-lg font-semibold mb-8">
-              There's a chance to extend for 5 minutes. Grab chance?  
-              Another clue is also available.
+      {showTooSoonVoting && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 w-[90%] max-w-3xl p-10 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl text-white text-center">
+            <p className="text-lg font-semibold mb-6">
+              Voting will be available in {minutesUntilVoting} minute{minutesUntilVoting !== 1 ? "s" : ""}.
             </p>
 
-            <div className="flex justify-between px-10">
-              {/* NO = go to results */}
-              <button
-                onClick={() => {
-                  setShowExtend(false);
-                  navigate("/soloGame/solo_result");   // 🔥 route to result.jsx
-                }}
-                className="text-red-600 font-semibold hover:underline"
-              >
-                No
+            <button onClick={() => setShowTooSoonVoting(false)} className="underline text-gray-200 hover:text-white transition">
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showVotingLocked && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 w-[90%] max-w-3xl p-10 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl text-white text-center">
+            <p className="text-lg font-semibold mb-6">You already used your last vote. No more changes allowed.</p>
+
+            <button onClick={() => setShowVotingLocked(false)} className="underline text-gray-200 hover:text-white transition">
+              OK
+            </button>
+          </div>
+        </div>
+      )}
+
+      {showExtend && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 w-[90%] max-w-3xl p-10 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl text-white text-center">
+            <p className="mb-8 text-lg">Time is up. Extend 5 more minutes?</p>
+
+            <div className="flex justify-center gap-16">
+              <button onClick={() => endGame("lose")} className="underline text-red-500 hover:text-white transition">
+                End Case
               </button>
 
-              {/* YES = apply extension */}
               <button
-                onClick={() => {
+                onClick={async () => {
                   setShowExtend(false);
                   setTimeLeft(EXTENSION_DURATION);
                   setTotalDuration(EXTENSION_DURATION);
                   setExtended(true);
+                  if (!clues.clue2) await unlockClue2();
                 }}
-                className="text-blue-600 font-semibold hover:underline"
+                className="underline text-gray-200 hover:text-white transition"
               >
-                Grab extension
+                Extend Time
               </button>
             </div>
           </div>
         </div>
       )}
 
-
-      {/* TOO SOON TO VOTE POPUP */}
-      {showTooSoonVoting && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8">
-            <p className="text-center text-lg font-semibold mb-6">
-              It’s too soon, voting is allowed after {minutesUntilVoting}{" "}
-              minute{minutesUntilVoting !== 1 ? "s" : ""}.
-            </p>
-
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowTooSoonVoting(false)}
-                className="text-blue-600 font-semibold hover:underline"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* VOTING LOCKED (ALREADY CHANGED ONCE) */}
-      {showVotingLocked && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8">
-            <p className="text-center text-lg font-semibold mb-6">
-              You have already used your last chance to change your vote.
-            </p>
-
-            <div className="flex justify-center">
-              <button
-                onClick={() => setShowVotingLocked(false)}
-                className="text-blue-600 font-semibold hover:underline"
-              >
-                OK
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* CASE ENDED POPUP */}
       {showCaseEnded && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-start pt-20 z-50">
-          <div className="bg-white w-[90%] max-w-3xl rounded-xl p-8">
-            <p className="text-center text-lg font-semibold mb-8">
-              Case has ended. See results now.
-            </p>
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex justify-center items-center z-50">
+          <div className="bg-white/10 w-[90%] max-w-3xl p-10 rounded-3xl border border-white/20 backdrop-blur-xl shadow-2xl text-white text-center">
+            <p className="mb-8 text-lg">Time is over. View the case results.</p>
 
-            <div className="flex justify-center">
-              <button
-                onClick={() => navigate("/result")}
-                className="text-blue-600 font-semibold hover:underline"
-              >
-                Okay
-              </button>
-            </div>
+            <button onClick={() => endGame("lose")} className="underline text-gray-200 hover:text-white transition">
+              See Results
+            </button>
           </div>
         </div>
       )}
-
     </div>
   );
 }
