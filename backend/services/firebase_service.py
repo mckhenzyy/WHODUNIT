@@ -50,10 +50,17 @@ import json
 
 class FirebaseService:
     def __init__(self):
-        if not firebase_admin._apps:
-            firebase_json = os.getenv("FIREBASE_ADMIN_KEY_JSON")
+        # 🔥 Load Firebase Admin Key from Environment Variable
+        firebase_json = os.getenv("FIREBASE_ADMIN_KEY_JSON")
 
-            cred = credentials.Certificate(json.loads(firebase_json))
+        if not firebase_json:
+            raise Exception("❌ Missing FIREBASE_ADMIN_KEY_JSON environment variable!")
+
+        # Convert env string → Python dict
+        service_account_info = json.loads(firebase_json)
+
+        if not firebase_admin._apps:
+            cred = credentials.Certificate(service_account_info)
 
             firebase_admin.initialize_app(
                 cred,
@@ -62,14 +69,20 @@ class FirebaseService:
                 }
             )
 
+    # 📌 Write data
     def set(self, path, data):
-        return db.reference(path).set(data)
+        db.reference(path).set(data)
+        return True
 
+    # 📌 Read data
     def get(self, path):
         return db.reference(path).get()
 
+    # 📌 Update data
     def update(self, path, data):
-        return db.reference(path).update(data)
+        db.reference(path).update(data)
+        return True
 
+    # 📌 Push new entry
     def push(self, path, data):
         return db.reference(path).push(data)
