@@ -266,9 +266,9 @@ def profile(username):
     one_month = now - 2592000
 
     stats = {
-        "day": {"wins": 0, "losses": 0},
-        "week": {"wins": 0, "losses": 0},
-        "month": {"wins": 0, "losses": 0},
+    "day": {"games": 0, "wins": 0, "losses": 0},
+    "week": {"games": 0, "wins": 0, "losses": 0},
+    "month": {"games": 0, "wins": 0, "losses": 0},
     }
 
     # ---------------------------------------------
@@ -293,10 +293,16 @@ def profile(username):
 
         if ts >= one_day:
             stats["day"][result_key] += 1
+            stats["day"]["games"] += 1
+
         if ts >= one_week:
             stats["week"][result_key] += 1
+            stats["week"]["games"] += 1
+
         if ts >= one_month:
             stats["month"][result_key] += 1
+            stats["month"]["games"] += 1
+
 
 
     return jsonify({
@@ -306,3 +312,4 @@ def profile(username):
         "total_games": total_games,
         "stats": stats
     }), 200
+

@@ -163,24 +163,78 @@ export default function Profile() {
   const [profile, setProfile] = useState(null);
   const [tab, setTab] = useState("day"); // day | week | month
 
+  // useEffect(() => {
+  //   if (!username) {
+  //     navigate("/");
+  //     return;
+  //   }
+
+  //   // axios.get(`http://localhost:5001/api/auth/profile/${username}`)
+  //   //   .then((res) => setProfile(res.data))
+  //   //   .catch(() => navigate("/"));
+  // const API = import.meta.env.VITE_API_BASE_URL;
+
+  // axios.get(`${API}/api/auth/profile/${username}`)
+  //   .then((res) => setProfile(res.data))
+  //   .catch(() => navigate("/dashboard"));
+  //   }, [username, navigate]);
+
   useEffect(() => {
-    if (!username) {
-      navigate("/");
-      return;
-    }
-
-    axios.get(`http://localhost:5001/api/auth/profile/${username}`)
-      .then((res) => setProfile(res.data))
-      .catch(() => navigate("/"));
-  }, [username, navigate]);
-
-  if (!profile) {
-    return (
-      <div className="flex justify-center items-center h-screen text-white text-lg">
-        Loading profile...
-      </div>
-    );
+  if (!username) {
+    navigate("/");
+    return;
   }
+
+  const API = import.meta.env.VITE_API_BASE_URL;
+
+  axios.get(`${API}/api/auth/profile/${username}`)
+    .then((res) => setProfile(res.data))
+    .catch(() => navigate("/dashboard"));
+}, [username, navigate]);
+
+  // if (!profile) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen text-white text-lg">
+  //       Loading profile...
+  //     </div>
+  //   );
+  // }
+
+if (!profile) {
+  return (
+    <div
+      className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat text-white"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
+      <div className="min-h-screen bg-black/70 backdrop-blur-md px-6 py-10 flex flex-col items-center">
+
+        {/* Skeleton Profile Card */}
+        <div className="w-full max-w-2xl bg-white/10 backdrop-blur-xl rounded-3xl p-10 border border-white/20 shadow-2xl animate-pulse">
+
+          {/* Avatar */}
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-24 h-24 bg-white/20 rounded-full mb-4"></div>
+
+            <div className="w-40 h-4 bg-white/20 rounded-full mb-2"></div>
+            <div className="w-28 h-3 bg-white/10 rounded-full"></div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-10">
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+            <div className="h-20 bg-white/20 rounded-xl"></div>
+          </div>
+
+          {/* Buttons */}
+          <div className="w-full h-12 bg-white/20 rounded-xl"></div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
 
   return (
     <div
@@ -264,7 +318,12 @@ export default function Profile() {
             <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
               <p className="text-sm text-gray-300">Games Played</p>
               <p className="text-3xl font-bold text-orange-400">
-                {profile.total_games}
+                {tab === "day"
+                  ? profile.stats.day.games
+                  : tab === "week"
+                  ? profile.stats.week.games
+                  : profile.stats.month.games}
+
               </p>
             </div>
 
