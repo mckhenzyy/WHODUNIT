@@ -240,18 +240,18 @@ def profile(username):
 
         now = int(time.time())
 
-        # Rebuild wins
         for i in range(total_wins):
             firebase.push(f"/history/{username}", {
                 "result": "win",
-                "timestamp": now - (i * 200)
+                # Distribute wins over last 30 days
+                "timestamp": now - (i * 86400)  # 1 game per day
             })
 
-        # Rebuild losses
         for i in range(total_losses):
             firebase.push(f"/history/{username}", {
                 "result": "loss",
-                "timestamp": now - ((total_wins * 200) + i * 200)
+                # Losses go even older (we avoid mixing)
+                "timestamp": now - ((total_wins + i) * 86400)
             })
 
         history = firebase.get(f"/history/{username}") or {}

@@ -316,14 +316,9 @@ if (!profile) {
           {/* STATS GRID */}
           <div className="grid grid-cols-3 gap-4 mb-10">
             <div className="bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10">
-              <p className="text-sm text-gray-300">Games Played</p>
+              <p className="text-sm text-gray-300">Games Played ({tab})</p>
               <p className="text-3xl font-bold text-orange-400">
-                {tab === "day"
-                  ? profile.stats.day.games
-                  : tab === "week"
-                  ? profile.stats.week.games
-                  : profile.stats.month.games}
-
+                {profile.stats?.[tab]?.games ?? 0}
               </p>
             </div>
 
