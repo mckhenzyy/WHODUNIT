@@ -27,11 +27,12 @@ export default function SoloStory() {
       try {
         setLoading(true);
         
-        const API = import.meta.env.VITE_API_BASE_URL;
+        // const API = import.meta.env.VITE_API_BASE_URL;
 
         // const res = await fetch("http://localhost:5001/api/solo/start-game"
 
-        const res = await fetch(`${API}/api/solo/start-game`, {
+        // const res = await fetch(`${API}/api/solo/start-game`
+        const res = await fetch("http://localhost:5001/api/solo/start-game", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username: user.username }),

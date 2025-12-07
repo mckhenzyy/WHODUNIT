@@ -103,9 +103,10 @@ export default function SoloChatbox() {
     try {
 
 // await fetch("http://localhost:5001/api/solo/chat"
+// await fetch(`${API}/api/solo/leave`
 
-      const API = import.meta.env.VITE_API_BASE_URL;
-      const res = await fetch(`${API}/api/solo/leave`, {
+      // const API = import.meta.env.VITE_API_BASE_URL;
+      const res = await fetch("http://localhost:5001/api/solo/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ session_id: sessionId, message: yourMessage }),
@@ -122,9 +123,10 @@ export default function SoloChatbox() {
   const unlockClue2 = async () => {
 
     // await fetch("http://localhost:5001/api/solo/clue2"
-    const API = import.meta.env.VITE_API_BASE_URL;
+    // await fetch(`${API}/api/solo/leave`
+    // const API = import.meta.env.VITE_API_BASE_URL;
 
-    const res = await fetch(`${API}/api/solo/leave`, {
+    const res = await fetch("http://localhost:5001/api/solo/clue2", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId }),
@@ -138,9 +140,11 @@ export default function SoloChatbox() {
   const endGame = async (resultStatus) => {
 
     // const res = await fetch("http://localhost:5001/api/solo/reveal"
-    const API = import.meta.env.VITE_API_BASE_URL;
+    // const API = import.meta.env.VITE_API_BASE_URL;
 
-    const res = await fetch(`${API}/api/solo/reveal`, {
+    // const res = await fetch(`${API}/api/solo/reveal`
+    
+    const res = await fetch("http://localhost:5001/api/solo/reveal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId }),
@@ -213,9 +217,10 @@ const handleConfirmVote = async () => {
 
   // const res = await fetch("http://localhost:5001/api/solo/vote"
 
-  const API = import.meta.env.VITE_API_BASE_URL;
+  // const API = import.meta.env.VITE_API_BASE_URL;
 
-  const res = await fetch(`${API}/api/solo/vote`, {
+  // const res = await fetch(`${API}/api/solo/vote`
+  const res = await fetch("http://localhost:5001/api/solo/vote", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -266,9 +271,11 @@ const handleConfirmVote = async () => {
 
   const handleLeaveGame = async () => {
     // await fetch("http://localhost:5001/api/solo/leave"
-    const API = import.meta.env.VITE_API_BASE_URL;
+    // const API = import.meta.env.VITE_API_BASE_URL;
 
-    await fetch(`${API}/api/solo/leave`, {
+    // await fetch(`${API}/api/solo/leave`
+
+    await fetch("http://localhost:5001/api/solo/leave", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ session_id: sessionId }),

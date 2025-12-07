@@ -53,8 +53,9 @@ const handleLogin = async (e) => {
   e.preventDefault();
 
   try {
-    const API = import.meta.env.VITE_API_BASE_URL;
-    const res = await fetch(`${API}/api/auth/login`, {
+    // const API = import.meta.env.VITE_API_BASE_URL;
+    // const res = await fetch(`${API}/api/auth/login`
+    const res = await fetch("http://localhost:5001/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),

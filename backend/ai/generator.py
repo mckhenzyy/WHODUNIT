@@ -1214,7 +1214,7 @@ RULES FOR YOUR RESPONSE:
 
 Respond now:
 """
-    return generate_text(prompt, max_tokens=250).strip()
+    return generate_text(prompt, max_tokens=300).strip()
 
 
 
