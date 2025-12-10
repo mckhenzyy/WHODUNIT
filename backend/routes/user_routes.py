@@ -526,7 +526,7 @@ def send_reset_email(email, code, username, reset_url):
     url = "https://api.resend.com/emails"
 
     payload = {
-        "from": "WHODUNIT <onboarding@resend.dev>",
+        "from": "WHODUNIT <WHODUNIT@resend.dev>",
         "to": email,
         "subject": "WHODUNIT Password Reset",
         "html": f"""
