@@ -2,6 +2,9 @@ from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_socketio import SocketIO
 from config import settings
+from flask_mail import Mail
+
+mail = Mail()
 
 
 def create_app():
@@ -17,6 +20,20 @@ def create_app():
     CORS(app, resources={r"/*": {"origins": "*"}})
 
 
+    
+        # -----------------------------------------
+    # EMAIL SETTINGS (SMTP for password reset)
+    # -----------------------------------------
+    app.config["MAIL_SERVER"] = "smtp.gmail.com"
+    app.config["MAIL_PORT"] = 587
+    app.config["MAIL_USE_TLS"] = True
+    app.config["MAIL_USERNAME"] = "delapenasamalexies@gmail.com"
+    app.config["MAIL_PASSWORD"] = "cncd liwq zmsv nfjd"  # From Google App Passwords
+    app.config["MAIL_DEFAULT_SENDER"] = "WHODUNIT delapenasamalexies@gmail.com"
+
+    mail.init_app(app)
+
+    
     # socketio = SocketIO(
     #     app,
     #     cors_allowed_origins=[settings.FRONTEND_ORIGIN],

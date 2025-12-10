@@ -89,3 +89,7 @@ class FirebaseService:
 
     def push(self, path, data):
         return db.reference(path).push(data)
+    
+    def delete(self, path):
+        from firebase_admin import db
+        db.reference(path).delete()

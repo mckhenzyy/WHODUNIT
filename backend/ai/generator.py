@@ -998,9 +998,13 @@ def extract_unique_items(story):
     suspects = list(set(suspects))[:4]  # ensure 4 max unique
 
     # Detect setting (first paragraph main location keywords)
-    match_setting = re.search(r"(in|at|inside|near|on)\s+a?n?\s?([A-Za-z\s]+)", story)
-    setting = match_setting.group(2).strip() if match_setting else None
+    # match_setting = re.search(r"(in|at|inside|near|on)\s+a?n?\s?([A-Za-z\s]+)", story)
+    # setting = match_setting.group(2).strip() if match_setting else None
 
+    
+    setting = extract_setting(story)
+
+    
     # Detect crime method (look for verbs related to sabotage or unusual crime)
     keywords = ["rigged", "tampered", "sabotaged", "poison", "collapse", "gas leak", "trap"]
     crime = None
@@ -1010,6 +1014,42 @@ def extract_unique_items(story):
             break
 
     return suspects, setting, crime
+
+
+
+
+
+def extract_setting(story: str):
+    """
+    Extracts the main setting/location of the story for memory tracking.
+    It looks at the title and first paragraph for the strongest match.
+    """
+
+    # 1) Try reading the title (often contains the setting name)
+    title_line = story.split("\n")[0].strip()
+    title_match = re.search(r"(at|in|inside|near|on)\s+(the\s)?([A-Za-z\s]+)", title_line, re.IGNORECASE)
+    if title_match:
+        return title_match.group(3).strip().title()
+
+    # 2) Look in the first paragraph
+    first_paragraph = story.split("\n")[1].strip() if "\n" in story else story
+    para_match = re.search(r"(in|at|inside|near|on)\s+(the\s)?([A-Za-z\s]+)", first_paragraph, re.IGNORECASE)
+    if para_match:
+        return para_match.group(3).strip().title()
+
+    # 3) Fallback: detect strongest location-like nouns
+    common_places = [
+        "airport", "laboratory", "studio", "museum", "train station", "library",
+        "office", "hotel", "pier", "factory", "warehouse", "gallery", "resort",
+        "theater", "dock", "mansion", "police station", "courtroom", "hospital"
+    ]
+
+    for place in common_places:
+        if place.lower() in story.lower():
+            return place.title()
+
+    # if all fails, mark unknown
+    return "Unknown Location"
 
 
 # def generate_crime_story():
@@ -1188,6 +1228,36 @@ Write the clue:
 #     return generate_text(prompt, max_tokens=180)
 
 
+# def generate_chat_reply(story, suspects, message):
+#     prompt = f"""
+# You are a detective assistant inside a mystery-solving game.
+
+# STORY CONTEXT:
+# {story}
+
+# VALID SUSPECTS (DO NOT invent new ones):
+# {", ".join(suspects)}
+
+# PLAYER QUESTION:
+# "{message}"
+
+# RULES FOR YOUR RESPONSE:
+# - Reply in 2–5 sentences MAX.
+# - If question is about ONE suspect → discuss only that suspect’s motive, timeline, or suspicious contradictions found in the story.
+# - If about ALL → summarize differences, motives, and behavior logically.
+# - If the player asks “who is the killer?” → you MUST NOT reveal it. Instead give analysis and encourage investigation.
+# - If they ask something NOT supported by story facts, respond with:  
+#   *“There’s nothing in evidence that confirms that yet — but it might become important later.”*
+# - if the player mentions a name that is not existing in the case or in the story, tell the player that it is not included in the case and tell the user to only focus on the suspects listed.
+# - Tone: sharp, cinematic, investigative — like a real partner.
+# - DO NOT repeat sentences.
+# - NEVER reveal the culprit.
+
+# Respond now:
+# """
+#     return generate_text(prompt, max_tokens=300).strip()
+
+
 def generate_chat_reply(story, suspects, message):
     prompt = f"""
 You are a detective assistant inside a mystery-solving game.
@@ -1205,9 +1275,11 @@ RULES FOR YOUR RESPONSE:
 - Reply in 2–5 sentences MAX.
 - If question is about ONE suspect → discuss only that suspect’s motive, timeline, or suspicious contradictions found in the story.
 - If about ALL → summarize differences, motives, and behavior logically.
-- If the player asks “who is the killer?” → you MUST NOT reveal it. Instead give analysis and encourage investigation.
+- If the player asks “who is the killer?” or any question about revealing the real suspect → you MUST NOT reveal it. Instead give analysis and encourage investigation.
 - If they ask something NOT supported by story facts, respond with:  
   *“There’s nothing in evidence that confirms that yet — but it might become important later.”*
+- if the player mentions a name that is not existing in the case or in the story, tell the player that it is not included in the case and tell the user to only focus on the suspects listed.
+- If they ask personal or off-topic questions, tell the player to focus on the case.
 - Tone: sharp, cinematic, investigative — like a real partner.
 - DO NOT repeat sentences.
 - NEVER reveal the culprit.

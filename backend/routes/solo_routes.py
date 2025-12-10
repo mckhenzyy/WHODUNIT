@@ -339,7 +339,7 @@ from flask import Blueprint, request, jsonify
 from services.firebase_service import FirebaseService
 import uuid
 import time
-import random
+import random, re
 
 from ai.generator import (
     generate_crime_story,
@@ -353,6 +353,41 @@ from ai.generator import (
 solo_routes = Blueprint("solo_routes", __name__)
 firebase = FirebaseService()
 
+
+
+
+def extract_setting(story):
+    match = re.search(r"(in|at|inside|near|on)\s([A-Za-z\s]+)", story)
+    return match.group(2).strip() if match else None
+
+def update_leaderboard(username, streak):
+    path = "/leaderboard"
+    
+    leaderboard = firebase.get(path) or {}
+
+    # Always overwrite existing entry
+    leaderboard[username] = {
+        "username": username,
+        "streak": streak,
+        "updated_at": int(time.time())
+    }
+
+    # Sort
+    sorted_list = sorted(
+        leaderboard.values(),
+        key=lambda x: (-x["streak"], x["updated_at"])
+    )
+
+    # Keep only top 10
+    final_list = sorted_list[:10]
+
+    # Rebuild dictionary form
+    final_dict = {entry["username"]: entry for entry in final_list}
+
+    # Force-save
+    firebase.set(path, final_dict)
+
+    return final_dict
 
 # ---------------------------------------------------
 # START SOLO GAME
@@ -473,6 +508,67 @@ firebase = FirebaseService()
 #         "clues": {"clue1": clue1, "clue2": None}
 #     }), 200
 
+# @solo_routes.route("/start-game", methods=["POST"])
+# def start_game():
+#     data = request.get_json()
+#     username = data.get("username")
+
+#     if not username:
+#         return jsonify({"error": "Username is required"}), 400
+
+#     session_id = str(uuid.uuid4())
+
+#     # 🔥 NEW: Smart generator (prevents repeated suspects/settings/themes)
+#     story = generate_crime_story()
+
+#     # Extract suspects from generated story
+#     suspects = extract_suspects(story)
+
+#     # Safety fallback: ensure at least 4 suspects
+#     if len(suspects) < 4:
+#         fallback = [
+#             "Ava Carter", "Ethan Hayes", "Liam Brooks",
+#             "Mason Reed", "Olivia Turner", "Noah Scott",
+#             "Sophie Lane", "Logan Pierce", "Harper Cole", "Zara Quinn"
+#         ]
+#         suspects = random.sample(fallback, 4)
+
+#     # Pick a random culprit from suspects list
+#     culprit = pick_culprit(suspects)
+
+#     # Generate dynamic clues based on culprit + story
+#     clue1 = generate_clue(story, culprit, "weak")
+#     clue2 = generate_clue(story, culprit, "strong")
+
+#     # ------- SAVE GAME DATA TO FIREBASE -------
+#     game_data = {
+#         "player": username,
+#         "session_id": session_id,
+#         "story": story,
+#         "suspects": suspects,
+#         "culprit": culprit,
+#         "clues": {
+#             "clue1": clue1,
+#             "clue2": clue2
+#         },
+#         "votes": [],
+#         "created_at": int(time.time()),
+#         "status": "in_progress"
+#     }
+
+#     firebase.set(f"/solo_games/{session_id}", game_data)
+
+#     # ------- SEND ONLY WHAT FRONTEND NEEDS FIRST -------
+#     return jsonify({
+#         "session_id": session_id,
+#         "story": story,
+#         "suspects": suspects,
+#         "clue1": clue1,        # immediate first clue
+#         "clues": {"clue1": clue1, "clue2": None}  # reveal clue2 later
+#     }), 200
+
+
+
 @solo_routes.route("/start-game", methods=["POST"])
 def start_game():
     data = request.get_json()
@@ -483,13 +579,37 @@ def start_game():
 
     session_id = str(uuid.uuid4())
 
-    # 🔥 NEW: Smart generator (prevents repeated suspects/settings/themes)
-    story = generate_crime_story()
+    # --- Load player history to prevent duplicates ---
+    history = firebase.get(f"/case_history/{username}") or {}
 
-    # Extract suspects from generated story
-    suspects = extract_suspects(story)
+    played_settings = {entry.get("setting") for entry in history.values() if entry.get("setting")}
+    played_suspects = {sus for entry in history.values() for sus in entry.get("suspects", [])}
+    played_hashes = {entry.get("story_hash") for entry in history.values()}
 
-    # Safety fallback: ensure at least 4 suspects
+    # --- Try generating a UNIQUE story ---
+    attempts = 0
+    suspects = []
+    story = None
+    story_setting = None
+
+    while attempts < 6:  # try up to 6 times for uniqueness
+        story = generate_crime_story()
+        story_hash = hash(story)
+        suspects = extract_suspects(story)
+        story_setting = extract_setting(story)
+
+        # Check if story is unique based on:
+        # - story hash
+        # - suspects uniqueness
+        # - setting uniqueness
+        if (story_hash not in played_hashes 
+            and not (set(suspects) & played_suspects)
+            and story_setting not in played_settings):
+            break
+
+        attempts += 1
+
+    # fallback if uniqueness failed
     if len(suspects) < 4:
         fallback = [
             "Ava Carter", "Ethan Hayes", "Liam Brooks",
@@ -498,14 +618,12 @@ def start_game():
         ]
         suspects = random.sample(fallback, 4)
 
-    # Pick a random culprit from suspects list
     culprit = pick_culprit(suspects)
 
-    # Generate dynamic clues based on culprit + story
     clue1 = generate_clue(story, culprit, "weak")
     clue2 = generate_clue(story, culprit, "strong")
 
-    # ------- SAVE GAME DATA TO FIREBASE -------
+    # ---- Save story session ----
     game_data = {
         "player": username,
         "session_id": session_id,
@@ -523,13 +641,12 @@ def start_game():
 
     firebase.set(f"/solo_games/{session_id}", game_data)
 
-    # ------- SEND ONLY WHAT FRONTEND NEEDS FIRST -------
     return jsonify({
         "session_id": session_id,
         "story": story,
         "suspects": suspects,
-        "clue1": clue1,        # immediate first clue
-        "clues": {"clue1": clue1, "clue2": None}  # reveal clue2 later
+        "clue1": clue1,
+        "clues": {"clue1": clue1, "clue2": None}
     }), 200
 
 
@@ -659,6 +776,162 @@ def clue2():
 #             "final": True
 #         }), 200
 
+
+
+@solo_routes.route("/history/<username>", methods=["GET"])
+def get_history(username):
+    history = firebase.get(f"/case_history/{username}") or {}
+
+    formatted = sorted(
+        history.values(),
+        key=lambda x: -(x.get("timestamp") or 0)  # prevents crash on missing timestamps
+    )
+
+    return jsonify(formatted), 200
+
+
+
+@solo_routes.route("/history/details", methods=["POST"])
+def get_case_details():
+    data = request.get_json()
+    username = data.get("username")
+    session_id = data.get("session_id")
+
+    case = firebase.get(f"/case_history/{username}/{session_id}")
+    if not case:
+        return jsonify({"error": "Case not found"}), 404
+
+    return jsonify(case), 200
+
+
+# @solo_routes.route("/vote", methods=["POST"])
+# def vote():
+#     data = request.get_json()
+#     session_id = data.get("session_id")
+#     guess = data.get("guess")
+#     username = data.get("username")
+
+#     game = firebase.get(f"/solo_games/{session_id}")
+#     if not game:
+#         return jsonify({"error": "Game not found"}), 404
+
+#     elapsed = int(time.time()) - game["created_at"]
+
+#     if elapsed < 300 and len(game.get("votes", [])) == 0:
+#         return jsonify({"error": "too_soon", "seconds_left": 300 - elapsed}), 403
+
+#     votes = game.get("votes", [])
+#     attempt = len(votes) + 1
+#     if attempt > 2:
+#         return jsonify({"error": "No more attempts"}), 400
+
+#     correct = (guess == game["culprit"])
+#     votes.append({"guess": guess, "correct": correct})
+#     firebase.update(f"/solo_games/{session_id}", {"votes": votes})
+
+#     user_path = f"/users/{username}"
+#     user = firebase.get(user_path)
+
+
+#     # WIN condition (any correct vote)
+#     # if correct:
+#     #     user["total_games"] += 1
+#     #     user["total_wins"] += 1
+#     #     firebase.set(user_path, user)
+
+#     #     firebase.push(f"/history/{username}", {
+#     #         "result": "win",
+#     #         "timestamp": int(time.time())
+#     #     })
+
+#     #     firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
+
+#     #     return jsonify({"correct": True, "final": True, "message": "Correct! Case solved."}), 200
+
+    
+#     if correct:
+#         user["total_games"] += 1
+#         user["total_wins"] += 1
+
+#         # WIN STREAK update
+#         user["win_streak"] = user.get("win_streak", 0) + 1
+
+#         firebase.set(user_path, user)
+
+#         firebase.push(f"/history/{username}", {
+#             "result": "win",
+#             "timestamp": int(time.time())
+#         })
+
+#         firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
+
+#         # 🏆 UPDATE LEADERBOARD
+#         update_leaderboard(username, user["win_streak"])
+
+#         return jsonify({"correct": True, "final": True, "message": "Correct! Case solved."}), 200
+
+
+#     # WRONG FIRST VOTE → unlock clue & allow retry
+#     if attempt == 1:
+#         return jsonify({
+#             "correct": False,
+#             "attempt": 1,
+#             "final": False,
+#             "unlock_clue": True,
+#             "message": "Wrong first guess. You still have one final chance."
+#         }), 200
+
+#     # WRONG SECOND VOTE → LOSE
+#     # if attempt == 2:
+#     #     user["total_games"] += 1
+#     #     user["total_losses"] += 1
+#     #     firebase.set(user_path, user)
+
+#     #     # 🔥 FIX: record loss in history
+#     #     firebase.push(f"/history/{username}", {
+#     #         "result": "loss",
+#     #         "timestamp": int(time.time())
+#     #     })
+
+#     #     firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
+
+#     #     return jsonify({
+#     #         "correct": False,
+#     #         "attempt": 2,
+#     #         "final": True,
+#     #         "message": "Wrong again. The case is lost."
+#     #     }), 200
+
+    
+#     if attempt == 2 and not correct:
+#         user["total_games"] += 1
+#         user["total_losses"] += 1
+
+#         # LOSING resets win streak
+#         user["win_streak"] = 0
+
+#         firebase.set(user_path, user)
+
+#         firebase.push(f"/history/{username}", {
+#             "result": "loss",
+#             "timestamp": int(time.time())
+#         })
+
+#         firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
+
+#         # 🏆 UPDATE LEADERBOARD (removes user if streak drops out of top 10)
+#         update_leaderboard(username, user["win_streak"])
+
+#         return jsonify({
+#             "correct": False,
+#             "attempt": 2,
+#             "final": True,
+#             "message": "Wrong again. The case is lost."
+#         }), 200
+
+
+
+
 @solo_routes.route("/vote", methods=["POST"])
 def vote():
     data = request.get_json()
@@ -678,7 +951,7 @@ def vote():
     votes = game.get("votes", [])
     attempt = len(votes) + 1
     if attempt > 2:
-        return jsonify({"error": "No more attempts"}), 400
+        return jsonify({"error": "No more attempts allowed"}), 400
 
     correct = (guess == game["culprit"])
     votes.append({"guess": guess, "correct": correct})
@@ -687,23 +960,43 @@ def vote():
     user_path = f"/users/{username}"
     user = firebase.get(user_path)
 
-    # WIN condition (any correct vote)
+    # 🎯 STORE CASE HISTORY (Win or Loss)
+    case_record = {
+        "title": game["story"].split("\n")[0],
+        "culprit": game["culprit"],
+        "result": "win" if correct else "loss",
+        "timestamp": int(time.time()) // 1,
+        "story": game["story"],
+        "reveal": generate_final_reveal(game["story"], game["culprit"]),
+        "suspects": game["suspects"],
+        "setting": extract_setting(game["story"]),
+        "story_hash": hash(game["story"])
+    }
+
+    firebase.set(f"/case_history/{username}/{session_id}", case_record)
+
+    # 🏆 IF PLAYER WINS
     if correct:
         user["total_games"] += 1
         user["total_wins"] += 1
-        firebase.set(user_path, user)
 
-        firebase.push(f"/history/{username}", {
-            "result": "win",
-            "timestamp": int(time.time())
-        })
+        # WIN streak update
+        user["win_streak"] = user.get("win_streak", 0) + 1
+
+        firebase.set(user_path, user)
 
         firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
 
-        return jsonify({"correct": True, "final": True, "message": "Correct! Case solved."}), 200
+        # update leaderboard
+        update_leaderboard(username, user["win_streak"])
 
+        return jsonify({
+            "correct": True,
+            "final": True,
+            "message": "Correct! Case solved."
+        }), 200
 
-    # WRONG FIRST VOTE → unlock clue & allow retry
+    # ❌ WRONG FIRST ATTEMPT
     if attempt == 1:
         return jsonify({
             "correct": False,
@@ -713,33 +1006,46 @@ def vote():
             "message": "Wrong first guess. You still have one final chance."
         }), 200
 
-    # WRONG SECOND VOTE → LOSE
+    # ❌ WRONG SECOND ATTEMPT → LOSE
     if attempt == 2:
         user["total_games"] += 1
         user["total_losses"] += 1
-        firebase.set(user_path, user)
 
-        # 🔥 FIX: record loss in history
-        firebase.push(f"/history/{username}", {
-            "result": "loss",
-            "timestamp": int(time.time())
-        })
+        # Reset streak
+        user["win_streak"] = 0
+
+        firebase.set(user_path, user)
 
         firebase.update(f"/solo_games/{session_id}", {"status": "finished"})
 
+        # update leaderboard
+        update_leaderboard(username, user["win_streak"])
+
         return jsonify({
             "correct": False,
-            "attempt": 2,
             "final": True,
-            "message": "Wrong again. The case is lost."
+            "message": "Wrong again. Case failed."
         }), 200
-
 
 
 
 # ---------------------------------------------------
 # FINAL REVEAL
 # ---------------------------------------------------
+# @solo_routes.route("/reveal", methods=["POST"])
+# def reveal():
+#     data = request.get_json()
+#     session_id = data.get("session_id")
+
+#     game = firebase.get(f"/solo_games/{session_id}")
+#     if not game:
+#         return jsonify({"error": "Game not found"}), 404
+
+#     final_text = generate_final_reveal(game["story"], game["culprit"])
+#     return jsonify({    
+#         "culprit": game["culprit"],
+#         "final_text": final_text
+#     }), 200
 @solo_routes.route("/reveal", methods=["POST"])
 def reveal():
     data = request.get_json()
@@ -749,8 +1055,12 @@ def reveal():
     if not game:
         return jsonify({"error": "Game not found"}), 404
 
+    # 🔥 Prevent reveal if no vote yet
+    if not game.get("votes") or len(game["votes"]) == 0:
+        return jsonify({"error": "no_vote"}), 403
+
     final_text = generate_final_reveal(game["story"], game["culprit"])
-    return jsonify({    
+    return jsonify({
         "culprit": game["culprit"],
         "final_text": final_text
     }), 200
@@ -771,3 +1081,16 @@ def leave():
     firebase.update(f"/solo_games/{session_id}", {"status": "abandoned", "counted": False})
     return jsonify({"message": "Game ended without result"}), 200
 
+
+
+
+@solo_routes.route("/leaderboard", methods=["GET"])
+def leaderboard():
+    leaderboard = firebase.get("/leaderboard") or {}
+    
+    sorted_list = sorted(
+        leaderboard.values(),
+        key=lambda x: (-x["streak"], x["updated_at"])
+    )
+
+    return jsonify(sorted_list), 200
