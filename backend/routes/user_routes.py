@@ -88,13 +88,15 @@
 from flask import Blueprint, request, jsonify
 from services.firebase_service import FirebaseService
 import datetime, hashlib, uuid, time, random
-from flask_mail import Mail, Message
+# from flask_mail import Mail, Message
+import requests
+import os
 
 
 user_routes = Blueprint("user_routes", __name__)
 firebase = FirebaseService()
 
-mail = Mail()
+# mail = Mail()
 
 def hash_password(password):
     return hashlib.sha256(password.encode()).hexdigest()
@@ -470,6 +472,88 @@ def profile(username):
 # ---------------------------------------------
 # REQUEST PASSWORD RESET
 # ---------------------------------------------
+# @user_routes.route("/request-reset", methods=["POST"])
+# def request_reset():
+#     data = request.get_json()
+#     email = data.get("email")
+
+#     safe_email = sanitize_email(email)
+#     username = firebase.get(f"/emails/{safe_email}")
+
+#     if not username:
+#         return jsonify({"error": "Email not found"}), 404
+
+#     token = str(uuid.uuid4())
+#     code = random.randint(100000, 999999)
+
+#     firebase.set(f"/reset_tokens/{token}", {
+#         "email": email,
+#         "code": str(code),
+#         "expires": int(time.time()) + 300  # 5 minutes
+#     })
+
+#     reset_url = f"http://localhost:5173/resetpassword?token={token}"
+
+#     msg = Message(
+#         subject="WHODUNIT Password Reset",
+#         recipients=[email],
+#         body=f"""
+#             Hello Detective {username},
+
+#             A password reset request has been made for your WHODUNIT account.
+
+#             🔐 Verification Code: {code}
+
+#             📎 Reset Link:
+#             {reset_url}
+
+#             This code will expire in 5 minutes — use it while it's valid.
+
+#             If you didn't request this, ignore it. The system will prevent unauthorized access.
+
+#             Stay vigilant, Detective.
+#             - WHODUNIT Security Division
+#             """
+#                 )
+
+#     mail.send(msg)
+
+#     return jsonify({"message": "Reset email sent"}), 200
+
+
+
+def send_reset_email(email, code, username, reset_url):
+    url = "https://api.resend.com/emails"
+
+    payload = {
+        "from": "WHODUNIT <onboarding@resend.dev>",
+        "to": email,
+        "subject": "WHODUNIT Password Reset",
+        "html": f"""
+            <h2>Hello Detective {username},</h2>
+            <p>A password reset request was made for your WHODUNIT account.</p>
+            <p>Your verification code is: <b>{code}</b></p>
+            <p>Click the link below to reset your password:</p>
+            <a href="{reset_url}">{reset_url}</a>
+            <p><br>This code expires in <b>5 minutes</b>.</p>
+            <p>If you did not request this, you may safely ignore it.</p>
+            <br>
+            <p>- WHODUNIT Security Division</p>
+        """
+    }
+
+    headers = {
+        "Authorization": f"Bearer {os.getenv('RESEND_API_KEY')}",
+        "Content-Type": "application/json"
+    }
+
+    try:
+        r = requests.post(url, json=payload, headers=headers)
+        print("Resend response:", r.text)
+    except Exception as e:
+        print("Resend error:", e)
+
+
 @user_routes.route("/request-reset", methods=["POST"])
 def request_reset():
     data = request.get_json()
@@ -490,33 +574,15 @@ def request_reset():
         "expires": int(time.time()) + 300  # 5 minutes
     })
 
+    # IMPORTANT: Replace localhost with your deployed frontend URL
+    # reset_url = f"https://YOUR_FRONTEND_URL/resetpassword?token={token}"
     reset_url = f"http://localhost:5173/resetpassword?token={token}"
-
-    msg = Message(
-        subject="WHODUNIT Password Reset",
-        recipients=[email],
-        body=f"""
-            Hello Detective {username},
-
-            A password reset request has been made for your WHODUNIT account.
-
-            🔐 Verification Code: {code}
-
-            📎 Reset Link:
-            {reset_url}
-
-            This code will expire in 5 minutes — use it while it's valid.
-
-            If you didn't request this, ignore it. The system will prevent unauthorized access.
-
-            Stay vigilant, Detective.
-            - WHODUNIT Security Division
-            """
-                )
-
-    mail.send(msg)
+    # Send email via Resend
+    send_reset_email(email, code, username, reset_url)
 
     return jsonify({"message": "Reset email sent"}), 200
+
+
 
 # ---------------------------------------------
 # RESET PASSWORD
