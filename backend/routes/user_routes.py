@@ -576,7 +576,7 @@ def request_reset():
 
     # IMPORTANT: Replace localhost with your deployed frontend URL
     # reset_url = f"https://YOUR_FRONTEND_URL/resetpassword?token={token}"
-    reset_url = f"http://localhost:5173/resetpassword?token={token}"
+    reset_url = f"https://whodunit-eight.vercel.app/resetpassword?token={token}"
     # Send email via Resend
     send_reset_email(email, code, username, reset_url)
 
