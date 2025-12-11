@@ -75,14 +75,15 @@ export default function Signup() {
       {/* SIGNUP CARD */}
       <div
         className={`
-          relative z-10 w-full max-w-sm sm:max-w-md 
+          relative z-10 w-full max-w-xs sm:max-w-sm 
           bg-white/10 backdrop-blur-xl 
           border border-white/20 rounded-3xl 
-          p-8 sm:p-10 shadow-[0_0_50px_rgba(0,0,0,0.6)]
+          p-6 sm:p-10 shadow-[0_0_50px_rgba(0,0,0,0.6)]
           transition-all duration-700
           ${showCard ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}
         `}
       >
+
         {/* LOGO */}
         <div className="flex justify-center mb-6">
           <img
@@ -111,13 +112,22 @@ export default function Signup() {
             required
           />
 
-          <input
-            type="date"
-            value={birthdate}
-            onChange={(e) => setBirthdate(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white focus:outline-none backdrop-blur-md"
-            required
-          />
+          <div className="relative mb-4">
+            {!birthdate && (
+              <span className="absolute left-4 top-3 text-gray-300 pointer-events-none">
+                
+              </span>
+            )}
+
+            <input
+              type="date"
+              value={birthdate}
+              onChange={(e) => setBirthdate(e.target.value)}
+              className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white backdrop-blur-md"
+              required
+            />
+          </div>
+
 
           {/* GENDER DROPDOWN */}
           <div className="relative mb-4 text-grey">
