@@ -84,14 +84,13 @@ export default function About() {
             <br />
 
             <p>
-              Step into a world where clues hide in plain sight, suspects twist their stories,
+              Step into a world where clues hide in plain sight
               and every decision leads you closer — or further — from the truth.
             </p>
 
             <br />
 
             <p>
-              Whether you're playing solo or challenging friends,
               WHODUNIT? turns every round into a thrilling race to uncover:
             </p>
           </div>
@@ -113,13 +112,6 @@ export default function About() {
               </p>
             </div>
 
-            <div className="bg-white/20 backdrop-blur-md p-4 rounded-xl border border-white/10 text-center shadow-lg">
-              <p className="text-xl font-bold text-[#ffd966]">🔥 Competitive or Solo Modes</p>
-              <p className="text-sm text-gray-300 mt-1">
-                Race friends — or solve mysteries at your own pace.
-              </p>
-            </div>
-
           </div>
 
           {/* POWERED */}
@@ -129,19 +121,19 @@ export default function About() {
 
           {/* CONTACT SECTION */}
           <div className="bg-white/20 backdrop-blur-xl p-6 rounded-xl border border-white/20">
-            <h2 className="text-center text-2xl font-bold text-black mb-3">
+            <h2 className="text-center text-2xl font-bold text-white mb-1">
               Need help?
             </h2>
 
-            <p className="text-black-200 text-center text-sm mb-4">
+            <p className="text-white text-center text-sm mb-4 italic mb-12">
               Contact the developers:
             </p>
 
-            <div className="flex flex-col text-center gap-2">
-              <a href="mailto:khezmangubat@gmail.com" className="text-[#ffb3b3] hover:text-white transition">
+            <div className="flex flex-col text-center gap-0">
+              <a href="mailto:khezmangubat@gmail.com" className="text-white hover:text-white transition">
                 khezmangubat@gmail.com
               </a>
-              <a href="mailto:delapenasamalexies@gmail.com" className="text-[#ffb3b3] hover:text-white transition">
+              <a href="mailto:delapenasamalexies@gmail.com" className="text-white hover:text-white transition">
                 delapenasamalexies@gmail.com
               </a>
             </div>

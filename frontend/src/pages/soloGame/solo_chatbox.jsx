@@ -3,9 +3,16 @@ import bg from "../../assets/bg.jpg";
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
+
+
+const formatTime = (s) =>
+  `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+
 export default function SoloChatbox() {
   const navigate = useNavigate();
 
+
+  
   // ======== SESSION + GAME DATA ========
   const [sessionId, setSessionId] = useState(null);
   const [story, setStory] = useState("");
@@ -74,12 +81,25 @@ export default function SoloChatbox() {
   const minutesUntilVoting = Math.ceil(secondsUntilVoting / 60);
 
   // ======== TIMER EFFECT ========
-  useEffect(() => {
+
+  
+    useEffect(() => {
+    // 1 MINUTE WARNING
+    if (timeLeft === 60) {
+      setMessages((prev) => [
+        ...prev,
+        { sender: "SYSTEM", text: "⏳ Only 1 minute left. Make your final guess soon." },
+      ]);
+    }
+
+    // HANDLE TIMER EXPIRATION
     if (timeLeft <= 0) {
       if (!extended) setShowExtend(true);
       else setShowCaseEnded(true);
       return;
     }
+
+
 
     const interval = setInterval(() => {
       setTimeLeft((prev) => prev - 1);
@@ -89,8 +109,8 @@ export default function SoloChatbox() {
     return () => clearInterval(interval);
   }, [timeLeft, extended]);
 
-  const formatTime = (s) =>
-    `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+  // const formatTime = (s) =>
+  //   `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 
   const handleSend = async () => {
     if (!input.trim() || !sessionId) return;
@@ -164,8 +184,15 @@ export default function SoloChatbox() {
       body: JSON.stringify({ session_id: sessionId }),
     });
 
+    // const data = await res.json();
     const data = await res.json();
 
+    if (data.error === "no_vote") {
+      alert("Before ending the case, you must cast a final vote.");
+      setShowVoting(true);
+      return;
+    }
+    
     localStorage.setItem(
       "solo_result",
       JSON.stringify({

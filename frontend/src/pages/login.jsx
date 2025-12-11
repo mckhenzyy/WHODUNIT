@@ -75,7 +75,15 @@ const handleLogin = async (e) => {
     }
 
     // 📌 Save user properly
-    await localStorage.setItem("user", JSON.stringify(data.user));
+    // await localStorage.setItem("user", JSON.stringify(data.user));
+
+    // 🔥 Clear previous session completely
+    localStorage.removeItem("user");
+    localStorage.removeItem("username");
+
+    // 🔥 Save new user properly
+    localStorage.setItem("user", JSON.stringify(data.user));
+    localStorage.setItem("username", data.user.username);
 
     // 📌 Redirect after saving
     window.location.href = "/dashboard";
@@ -158,6 +166,10 @@ const handleLogin = async (e) => {
           </button>
         </form>
 
+        <Link to="/forgotpass" className="block w-full text-center text-gray-300 mt-2 mb-5 text-sm italic cursor-pointer hover:text-white transition">
+          Forgot password?
+        </Link>
+
         {/* DESCRIPTION */}
         <p className="text-xs text-center italic text-gray-400 mt-6">
           A mystery-solving game where every clue matters.
@@ -175,6 +187,7 @@ const handleLogin = async (e) => {
           Powered by AK
         </p>
       </div>
+
     </div>
   );
 }

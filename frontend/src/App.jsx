@@ -58,7 +58,11 @@ import Signup from "./pages/signup";
 import Dashboard from "./pages/dashboard.jsx";
 import Profile from "./pages/profile.jsx";
 import About from "./pages/about.jsx";
-
+import ForgotPassword from "./pages/forgotpass.jsx";
+import ResetPassword from "./pages/resetpassword.jsx";
+import Leaderboard from "./pages/leaderboard.jsx";
+import History from "./pages/history.jsx";
+import CaseView from "./pages/caseview.jsx";
 // for multi-player
 import Multiplayer from "./pages/multiGame/multiplayer.jsx";
 import Multi_Join from "./pages/multiGame/multi_join.jsx";
@@ -83,6 +87,13 @@ export default function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/about" element={<About />} />
+        <Route path="/forgotpass" element={<ForgotPassword />} />
+        <Route path="/resetpassword" element={<ResetPassword />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/caseview" element={<CaseView />} />
+
+
 
         {/* MULTIPLAYER ROUTES */}
         <Route path="/multiGame/multiplayer" element={<Multiplayer />} />

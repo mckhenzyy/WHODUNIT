@@ -9,6 +9,7 @@ export default function Signup() {
   const [gender, setGender] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [mail, setMail] = useState("");
 
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
@@ -36,6 +37,7 @@ export default function Signup() {
           dob: birthdate,
           gender,
           username,
+          email: mail,
           password,
         }),
       });
@@ -57,7 +59,7 @@ export default function Signup() {
 
   return (
     <div
-      className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat flex items-center justify-center px-4 sm:px-6 relative"
+      className="min-h-screen bg-fixed bg-cover bg-center bg-no-repeat flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 overflow-hidden relative"
       style={{ backgroundImage: `url(${bg})` }}
     >
       {/* DARK OVERLAY */}
@@ -105,7 +107,7 @@ export default function Signup() {
             placeholder="Fullname"
             value={fullname}
             onChange={(e) => setFullname(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-red placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
             required
           />
 
@@ -113,7 +115,7 @@ export default function Signup() {
             type="date"
             value={birthdate}
             onChange={(e) => setBirthdate(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-red focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white focus:outline-none backdrop-blur-md"
             required
           />
 
@@ -124,16 +126,16 @@ export default function Signup() {
               className="
                 w-full px-4 py-3 rounded-xl 
                 bg-white/20 border border-white/20 
-                text-grey backdrop-blur-md flex justify-between items-center
+                text-white backdrop-blur-md flex justify-between items-center
               "
               onClick={() => setOpen(!open)}
             >
               {gender || "Select gender"}
-              <span className="text-grey text-lg">▼</span>
+              <span className="text-black text-lg">▼</span>
             </button>
 
             {open && (
-              <div className="absolute left-0 right-0 mt-1 bg-black/20 backdrop-blur-xl rounded-xl border border-white/20 shadow-lg z-10">
+              <div className="absolute left-0 right-0 mt-1 bg-red-900 text-white rounded-xl border border-red-900 shadow-lg z-10">
 
                 <div
                   className="px-4 py-2 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
@@ -165,7 +167,7 @@ export default function Signup() {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-red placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
             required
           />
 
@@ -174,7 +176,16 @@ export default function Signup() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-red placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            required
+          />
+
+          <input
+            type="mail"
+            placeholder="Mail"
+            value={mail}
+            onChange={(e) => setMail(e.target.value)}
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
             required
           />
 

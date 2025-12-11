@@ -185,6 +185,7 @@ export default function Profile() {
     return;
   }
 
+  // axios.get(`http://localhost:5001/api/auth/profile/${username}`
   const API = import.meta.env.VITE_API_BASE_URL;
 
   axios.get(`${API}/api/auth/profile/${username}`)
