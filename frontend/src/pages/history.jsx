@@ -149,19 +149,7 @@ export default function History() {
                           <span>{formatDate(c.timestamp)}</span>
                         </div>
 
-                        {/* Evidence preview */}
-                        <div className="mb-6">
-                          <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-                            <span>EVIDENCE COLLECTED</span>
-                            <span>{c.clues ? c.clues.length : 0} items</span>
-                          </div>
-                          <div className="h-1 w-full bg-gray-800/50 rounded-full overflow-hidden">
-                            <div 
-                              className="h-full bg-gradient-to-r from-red-800 to-red-600 rounded-full"
-                              style={{ width: `${Math.min(100, ((c.clues?.length || 0) / 10) * 100)}%` }}
-                            ></div>
-                          </div>
-                        </div>
+                        
 
                         {/* View Details Button */}
                         <button

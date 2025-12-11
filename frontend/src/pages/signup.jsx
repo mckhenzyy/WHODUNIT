@@ -103,57 +103,73 @@ export default function Signup() {
             placeholder="Fullname"
             value={fullname}
             onChange={(e) => setFullname(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 text-base focus:outline-none backdrop-blur-md"
             required
           />
 
+          {/* DATE INPUT FIXED FOR IOS AND ANDROID */}
           <div className="relative mb-4">
-            {!birthdate && (
-              <span className="absolute left-4 top-3 text-gray-300 pointer-events-none"></span>
-            )}
-
             <input
               type="date"
               value={birthdate}
               onChange={(e) => setBirthdate(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white backdrop-blur-md"
+              className="w-full px-4 py-3 rounded-xl 
+                bg-white/20 border border-white/20 
+                text-white text-base backdrop-blur-md
+                appearance-none"
               required
+              onFocus={(e) => e.target.showPicker?.()}
             />
+            
+            {/* CUSTOM DATE PLACEHOLDER FOR MOBILE */}
+            {!birthdate && (
+              <div className="absolute inset-0 flex items-center pointer-events-none">
+                <span className="text-gray-300 px-4 py-3 text-base">
+                  mm/dd/yyyy
+                </span>
+              </div>
+            )}
           </div>
 
           {/* GENDER DROPDOWN */}
-          <div className="relative mb-4 text-grey">
+          <div className="relative mb-4">
             <button
               type="button"
               className="
-                w-full px-4 py-3 rounded-xl 
+                w-full mb-4 px-4 py-3 rounded-xl 
                 bg-white/20 border border-white/20 
-                text-white backdrop-blur-md flex justify-between items-center
+                text-white placeholder-gray-300 
+                text-base focus:outline-none backdrop-blur-md
+                flex justify-between items-center
               "
               onClick={() => setOpen(!open)}
             >
-              {gender || "Select gender"}
-              <span className="text-black text-lg">▼</span>
+              <span className={gender ? "text-white" : "text-gray-300"}>
+                {gender || "Select gender"}
+              </span>
+              <span className="text-white text-lg transform transition-transform duration-200">
+                {open ? "▲" : "▼"}
+              </span>
             </button>
 
             {open && (
-              <div className="absolute left-0 right-0 mt-1 bg-red-900 text-white rounded-xl border border-red-900 shadow-lg z-10">
+              <div className="absolute left-0 right-0 mt-1 bg-red-900 text-white rounded-xl border border-white/20 shadow-lg z-10 backdrop-blur-md">
                 <div
-                  className="px-4 py-2 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
+                  className="px-4 py-3 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
                   onClick={() => { setGender("Male"); setOpen(false); }}
                 >
                   Male
                 </div>
 
                 <div
-                  className="px-4 py-2 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
+                  className="px-4 py-3 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
                   onClick={() => { setGender("Female"); setOpen(false); }}
                 >
                   Female
                 </div>
 
                 <div
-                  className="px-4 py-2 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
+                  className="px-4 py-3 hover:bg-[#800000] cursor-pointer rounded-lg text-white"
                   onClick={() => { setGender("Prefer not to say"); setOpen(false); }}
                 >
                   Prefer not to say
@@ -167,7 +183,7 @@ export default function Signup() {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 text-base focus:outline-none backdrop-blur-md"
             required
           />
 
@@ -176,16 +192,16 @@ export default function Signup() {
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 text-base focus:outline-none backdrop-blur-md"
             required
           />
 
           <input
-            type="mail"
+            type="email"
             placeholder="Mail"
             value={mail}
             onChange={(e) => setMail(e.target.value)}
-            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 focus:outline-none backdrop-blur-md"
+            className="w-full mb-4 px-4 py-3 rounded-xl bg-white/20 border border-white/20 text-white placeholder-gray-300 text-base focus:outline-none backdrop-blur-md"
             required
           />
 
@@ -210,6 +226,48 @@ export default function Signup() {
           Powered by AK
         </p>
       </div>
+      
+      {/* IOS/SAFARI SPECIFIC STYLES */}
+      <style>{`
+        /* Fix for iOS date input placeholder */
+        input[type="date"]::-webkit-date-and-time-value {
+          text-align: left;
+          color: white;
+        }
+        
+        /* Fix for iOS placeholder color */
+        input::placeholder {
+          color: #d1d5db !important; /* gray-300 equivalent */
+          opacity: 1;
+        }
+        
+        /* Fix for iOS input styling */
+        input[type="date"] {
+          min-height: 44px; /* Minimum touch target size for iOS */
+        }
+        
+        /* Fix for iOS dropdown arrow */
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          filter: invert(1) brightness(2);
+          opacity: 0.7;
+          cursor: pointer;
+        }
+        
+        /* Android Chrome fix */
+        @media screen and (-webkit-min-device-pixel-ratio:0) {
+          input[type="date"] {
+            color: white;
+          }
+          input[type="date"]:invalid {
+            color: transparent;
+          }
+        }
+        
+        /* Ensure placeholder is visible on all devices */
+        .placeholder-gray-300::placeholder {
+          color: #d1d5db !important;
+        }
+      `}</style>
     </div>
   );
 }
